@@ -1,0 +1,28 @@
+-classpath
+'d:/data/projects/OpenSource/CONFIGURATION_1_7RC3/target/classes;C:/Users/hacker/.m2/repository/log4j/log4j/1.2.8/log4j-1.2.8.jar;C:/Users/hacker/.m2/repository/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar;C:/Users/hacker/.m2/repository/commons-lang/commons-lang/2.6/commons-lang-2.6.jar;C:/Users/hacker/.m2/repository/commons-jexl/commons-jexl/1.1/commons-jexl-1.1.jar;C:/Users/hacker/.m2/repository/org/apache/ant/ant-launcher/1.8.2/ant-launcher-1.8.2.jar;C:/Users/hacker/.m2/repository/commons-collections/commons-collections/3.2.1/commons-collections-3.2.1.jar;C:/Users/hacker/.m2/repository/org/apache/maven/scm/maven-scm-api/1.4/maven-scm-api-1.4.jar;C:/Users/hacker/.m2/repository/org/apache/ant/ant/1.8.2/ant-1.8.2.jar;C:/Users/hacker/.m2/repository/commons-beanutils/commons-beanutils/1.8.3/commons-beanutils-1.8.3.jar;C:/Users/hacker/.m2/repository/javax/servlet/servlet-api/2.4/servlet-api-2.4.jar;C:/Users/hacker/.m2/repository/commons-jxpath/commons-jxpath/1.3/commons-jxpath-1.3.jar;C:/Users/hacker/.m2/repository/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar;C:/Users/hacker/.m2/repository/commons-digester/commons-digester/1.8.1/commons-digester-1.8.1.jar;C:/Users/hacker/.m2/repository/org/apache/commons/commons-vfs2/2.0/commons-vfs2-2.0.jar;C:/Users/hacker/.m2/repository/org/codehaus/plexus/plexus-utils/1.5.6/plexus-utils-1.5.6.jar;C:/Users/hacker/.m2/repository/regexp/regexp/1.3/regexp-1.3.jar;C:/Users/hacker/.m2/repository/xml-resolver/xml-resolver/1.2/xml-resolver-1.2.jar;C:/Users/hacker/.m2/repository/org/apache/maven/scm/maven-scm-provider-svn-commons/1.4/maven-scm-provider-svn-commons-1.4.jar;C:/Users/hacker/.m2/repository/org/apache/maven/scm/maven-scm-provider-svnexe/1.4/maven-scm-provider-svnexe-1.4.jar;C:/Users/hacker/.m2/repository/commons-codec/commons-codec/1.5/commons-codec-1.5.jar'
+-encoding
+'iso-8859-1'
+-protected
+-quiet
+-source
+'1.4'
+-sourcepath
+'d:/data/projects/OpenSource/CONFIGURATION_1_7RC3/src/java'
+-author
+-bottom
+'Copyright &#169; 2001-2011 <a href="http://www.apache.org/">The Apache Software Foundation</a>. All Rights Reserved.'
+-charset
+'iso-8859-1'
+-d
+'d:/data/projects/OpenSource/CONFIGURATION_1_7RC3/target/site/apidocs'
+-docencoding
+'iso-8859-1'
+-doctitle
+'Commons Configuration 1.7 API'
+-link
+'http://download.oracle.com/javase/6/docs/api'
+-linksource
+-use
+-version
+-windowtitle
+'Commons Configuration 1.7 API'

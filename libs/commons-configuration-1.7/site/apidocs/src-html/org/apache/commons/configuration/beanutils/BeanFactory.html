@@ -1,0 +1,142 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /*<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Licensed to the Apache Software Foundation (ASF) under one or more<a name="line.2"></a>
+<FONT color="green">003</FONT>     * contributor license agreements.  See the NOTICE file distributed with<a name="line.3"></a>
+<FONT color="green">004</FONT>     * this work for additional information regarding copyright ownership.<a name="line.4"></a>
+<FONT color="green">005</FONT>     * The ASF licenses this file to You under the Apache License, Version 2.0<a name="line.5"></a>
+<FONT color="green">006</FONT>     * (the "License"); you may not use this file except in compliance with<a name="line.6"></a>
+<FONT color="green">007</FONT>     * the License.  You may obtain a copy of the License at<a name="line.7"></a>
+<FONT color="green">008</FONT>     *<a name="line.8"></a>
+<FONT color="green">009</FONT>     *     http://www.apache.org/licenses/LICENSE-2.0<a name="line.9"></a>
+<FONT color="green">010</FONT>     *<a name="line.10"></a>
+<FONT color="green">011</FONT>     * Unless required by applicable law or agreed to in writing, software<a name="line.11"></a>
+<FONT color="green">012</FONT>     * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.12"></a>
+<FONT color="green">013</FONT>     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.13"></a>
+<FONT color="green">014</FONT>     * See the License for the specific language governing permissions and<a name="line.14"></a>
+<FONT color="green">015</FONT>     * limitations under the License.<a name="line.15"></a>
+<FONT color="green">016</FONT>     */<a name="line.16"></a>
+<FONT color="green">017</FONT>    package org.apache.commons.configuration.beanutils;<a name="line.17"></a>
+<FONT color="green">018</FONT>    <a name="line.18"></a>
+<FONT color="green">019</FONT>    /**<a name="line.19"></a>
+<FONT color="green">020</FONT>     * &lt;p&gt;<a name="line.20"></a>
+<FONT color="green">021</FONT>     * Definition of an interface for bean factories.<a name="line.21"></a>
+<FONT color="green">022</FONT>     * &lt;/p&gt;<a name="line.22"></a>
+<FONT color="green">023</FONT>     * &lt;p&gt;<a name="line.23"></a>
+<FONT color="green">024</FONT>     * Beans defined in configuration files are not directly created, but by so<a name="line.24"></a>
+<FONT color="green">025</FONT>     * called &lt;em&gt;bean factories&lt;/em&gt;. This additional level of indirection<a name="line.25"></a>
+<FONT color="green">026</FONT>     * provides for high flexibility in the creation process. For instance one<a name="line.26"></a>
+<FONT color="green">027</FONT>     * implementation of this interface could be very simple and create a new<a name="line.27"></a>
+<FONT color="green">028</FONT>     * instance of the specified class for each invocation. A different<a name="line.28"></a>
+<FONT color="green">029</FONT>     * implementation could cache already created beans and ensure that always the<a name="line.29"></a>
+<FONT color="green">030</FONT>     * same bean of the given class will be returned - this would be an easy mean<a name="line.30"></a>
+<FONT color="green">031</FONT>     * for creating singleton objects.<a name="line.31"></a>
+<FONT color="green">032</FONT>     * &lt;/p&gt;<a name="line.32"></a>
+<FONT color="green">033</FONT>     * &lt;p&gt;<a name="line.33"></a>
+<FONT color="green">034</FONT>     * The interface itself is quite simple. There is a single method for creating a<a name="line.34"></a>
+<FONT color="green">035</FONT>     * bean of a given class. All necessary parameters are obtained from an also<a name="line.35"></a>
+<FONT color="green">036</FONT>     * passed in &lt;code&gt;{@link BeanDeclaration}&lt;/code&gt; object. It is also possible<a name="line.36"></a>
+<FONT color="green">037</FONT>     * (but optional) for a bean factory to declare the default class of the bean it<a name="line.37"></a>
+<FONT color="green">038</FONT>     * creates. Then it is not necessary to specify a bean class in the bean<a name="line.38"></a>
+<FONT color="green">039</FONT>     * declaration.<a name="line.39"></a>
+<FONT color="green">040</FONT>     * &lt;/p&gt;<a name="line.40"></a>
+<FONT color="green">041</FONT>     *<a name="line.41"></a>
+<FONT color="green">042</FONT>     * @since 1.3<a name="line.42"></a>
+<FONT color="green">043</FONT>     * @author Oliver Heger<a name="line.43"></a>
+<FONT color="green">044</FONT>     * @version $Id: BeanFactory.java 439648 2006-09-02 20:42:10Z oheger $<a name="line.44"></a>
+<FONT color="green">045</FONT>     */<a name="line.45"></a>
+<FONT color="green">046</FONT>    public interface BeanFactory<a name="line.46"></a>
+<FONT color="green">047</FONT>    {<a name="line.47"></a>
+<FONT color="green">048</FONT>        /**<a name="line.48"></a>
+<FONT color="green">049</FONT>         * Returns a bean instance for the given class. The bean will be initialized<a name="line.49"></a>
+<FONT color="green">050</FONT>         * from the specified bean declaration object. It is up to a concrete<a name="line.50"></a>
+<FONT color="green">051</FONT>         * implementation how the bean will be created and initialized.<a name="line.51"></a>
+<FONT color="green">052</FONT>         *<a name="line.52"></a>
+<FONT color="green">053</FONT>         * @param beanClass the class for the bean<a name="line.53"></a>
+<FONT color="green">054</FONT>         * @param data the bean declaration object containing all data about the<a name="line.54"></a>
+<FONT color="green">055</FONT>         * bean to be created<a name="line.55"></a>
+<FONT color="green">056</FONT>         * @param param an additional parameter that may be passed by calling code;<a name="line.56"></a>
+<FONT color="green">057</FONT>         * it is up to a concrete implementation how this parameter is evaluated<a name="line.57"></a>
+<FONT color="green">058</FONT>         * @return the new bean instance (should not be &lt;b&gt;null&lt;/b&gt;)<a name="line.58"></a>
+<FONT color="green">059</FONT>         * @throws Exception if an error occurs (the helper classes for creating<a name="line.59"></a>
+<FONT color="green">060</FONT>         * beans will catch this unspecific exception and wrap it in a configuration<a name="line.60"></a>
+<FONT color="green">061</FONT>         * exception)<a name="line.61"></a>
+<FONT color="green">062</FONT>         */<a name="line.62"></a>
+<FONT color="green">063</FONT>        Object createBean(Class beanClass, BeanDeclaration data, Object param)<a name="line.63"></a>
+<FONT color="green">064</FONT>                throws Exception;<a name="line.64"></a>
+<FONT color="green">065</FONT>    <a name="line.65"></a>
+<FONT color="green">066</FONT>        /**<a name="line.66"></a>
+<FONT color="green">067</FONT>         * Returns the default bean class of this bean factory. If an implementation<a name="line.67"></a>
+<FONT color="green">068</FONT>         * here returns a non &lt;b&gt;null&lt;/b&gt; value, bean declarations using this<a name="line.68"></a>
+<FONT color="green">069</FONT>         * factory do not need to provide the name of the bean class. In such a case<a name="line.69"></a>
+<FONT color="green">070</FONT>         * an instance of the default class will be created.<a name="line.70"></a>
+<FONT color="green">071</FONT>         *<a name="line.71"></a>
+<FONT color="green">072</FONT>         * @return the default class of this factory or &lt;b&gt;null&lt;/b&gt; if there is<a name="line.72"></a>
+<FONT color="green">073</FONT>         * none<a name="line.73"></a>
+<FONT color="green">074</FONT>         */<a name="line.74"></a>
+<FONT color="green">075</FONT>        Class getDefaultBeanClass();<a name="line.75"></a>
+<FONT color="green">076</FONT>    }<a name="line.76"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

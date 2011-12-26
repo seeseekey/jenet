@@ -1,0 +1,196 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /*<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Licensed to the Apache Software Foundation (ASF) under one or more<a name="line.2"></a>
+<FONT color="green">003</FONT>     * contributor license agreements.  See the NOTICE file distributed with<a name="line.3"></a>
+<FONT color="green">004</FONT>     * this work for additional information regarding copyright ownership.<a name="line.4"></a>
+<FONT color="green">005</FONT>     * The ASF licenses this file to You under the Apache License, Version 2.0<a name="line.5"></a>
+<FONT color="green">006</FONT>     * (the "License"); you may not use this file except in compliance with<a name="line.6"></a>
+<FONT color="green">007</FONT>     * the License.  You may obtain a copy of the License at<a name="line.7"></a>
+<FONT color="green">008</FONT>     *<a name="line.8"></a>
+<FONT color="green">009</FONT>     *     http://www.apache.org/licenses/LICENSE-2.0<a name="line.9"></a>
+<FONT color="green">010</FONT>     *<a name="line.10"></a>
+<FONT color="green">011</FONT>     * Unless required by applicable law or agreed to in writing, software<a name="line.11"></a>
+<FONT color="green">012</FONT>     * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.12"></a>
+<FONT color="green">013</FONT>     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.13"></a>
+<FONT color="green">014</FONT>     * See the License for the specific language governing permissions and<a name="line.14"></a>
+<FONT color="green">015</FONT>     * limitations under the License.<a name="line.15"></a>
+<FONT color="green">016</FONT>     */<a name="line.16"></a>
+<FONT color="green">017</FONT>    package org.apache.commons.configuration.resolver;<a name="line.17"></a>
+<FONT color="green">018</FONT>    <a name="line.18"></a>
+<FONT color="green">019</FONT>    import org.xml.sax.InputSource;<a name="line.19"></a>
+<FONT color="green">020</FONT>    import org.xml.sax.SAXException;<a name="line.20"></a>
+<FONT color="green">021</FONT>    import org.xml.sax.EntityResolver;<a name="line.21"></a>
+<FONT color="green">022</FONT>    <a name="line.22"></a>
+<FONT color="green">023</FONT>    import java.net.URL;<a name="line.23"></a>
+<FONT color="green">024</FONT>    import java.net.URLConnection;<a name="line.24"></a>
+<FONT color="green">025</FONT>    import java.io.InputStream;<a name="line.25"></a>
+<FONT color="green">026</FONT>    import java.io.IOException;<a name="line.26"></a>
+<FONT color="green">027</FONT>    import java.util.Map;<a name="line.27"></a>
+<FONT color="green">028</FONT>    import java.util.HashMap;<a name="line.28"></a>
+<FONT color="green">029</FONT>    <a name="line.29"></a>
+<FONT color="green">030</FONT>    /**<a name="line.30"></a>
+<FONT color="green">031</FONT>     * The DefaultEntityResolver used by XML Configurations.<a name="line.31"></a>
+<FONT color="green">032</FONT>     * @author &lt;a<a name="line.32"></a>
+<FONT color="green">033</FONT>     * href="http://commons.apache.org/configuration/team-list.html"&gt;Commons<a name="line.33"></a>
+<FONT color="green">034</FONT>     * Configuration team&lt;/a&gt;<a name="line.34"></a>
+<FONT color="green">035</FONT>     * @since 1.7<a name="line.35"></a>
+<FONT color="green">036</FONT>     * @version $Id: DefaultEntityResolver.java 729581 2008-12-27 02:27:49Z rgoers $<a name="line.36"></a>
+<FONT color="green">037</FONT>     */<a name="line.37"></a>
+<FONT color="green">038</FONT>    public class DefaultEntityResolver implements EntityResolver, EntityRegistry<a name="line.38"></a>
+<FONT color="green">039</FONT>    {<a name="line.39"></a>
+<FONT color="green">040</FONT>        /** Stores a map with the registered public IDs.*/<a name="line.40"></a>
+<FONT color="green">041</FONT>        private Map registeredEntities = new HashMap();<a name="line.41"></a>
+<FONT color="green">042</FONT>    <a name="line.42"></a>
+<FONT color="green">043</FONT>        /**<a name="line.43"></a>
+<FONT color="green">044</FONT>         * &lt;p&gt;<a name="line.44"></a>
+<FONT color="green">045</FONT>         * Registers the specified URL for the specified public identifier.<a name="line.45"></a>
+<FONT color="green">046</FONT>         * &lt;/p&gt;<a name="line.46"></a>
+<FONT color="green">047</FONT>         * &lt;p&gt;<a name="line.47"></a>
+<FONT color="green">048</FONT>         * This implementation maps &lt;code&gt;PUBLICID&lt;/code&gt;'s to URLs (from which<a name="line.48"></a>
+<FONT color="green">049</FONT>         * the resource will be loaded). A common use case for this method is to<a name="line.49"></a>
+<FONT color="green">050</FONT>         * register local URLs (possibly computed at runtime by a class loader) for<a name="line.50"></a>
+<FONT color="green">051</FONT>         * DTDs and Schemas. This allows the performance advantage of using a local<a name="line.51"></a>
+<FONT color="green">052</FONT>         * version without having to ensure every &lt;code&gt;SYSTEM&lt;/code&gt; URI on every<a name="line.52"></a>
+<FONT color="green">053</FONT>         * processed XML document is local. This implementation provides only basic<a name="line.53"></a>
+<FONT color="green">054</FONT>         * functionality. If more sophisticated features are required, either calling<a name="line.54"></a>
+<FONT color="green">055</FONT>         * &lt;code&gt;XMLConfiguration.setDocumentBuilder(DocumentBuilder)&lt;code&gt; to set a custom<a name="line.55"></a>
+<FONT color="green">056</FONT>         * &lt;code&gt;DocumentBuilder&lt;/code&gt; (which also can be initialized with a<a name="line.56"></a>
+<FONT color="green">057</FONT>         * custom &lt;code&gt;EntityResolver&lt;/code&gt;) or creating a custom entity resolver<a name="line.57"></a>
+<FONT color="green">058</FONT>         * and registering it with the XMLConfiguration is recommended.<a name="line.58"></a>
+<FONT color="green">059</FONT>         * &lt;/p&gt;<a name="line.59"></a>
+<FONT color="green">060</FONT>         *<a name="line.60"></a>
+<FONT color="green">061</FONT>         * @param publicId Public identifier of the Entity to be resolved<a name="line.61"></a>
+<FONT color="green">062</FONT>         * @param entityURL The URL to use for reading this Entity<a name="line.62"></a>
+<FONT color="green">063</FONT>         * @throws IllegalArgumentException if the public ID is undefined<a name="line.63"></a>
+<FONT color="green">064</FONT>         */<a name="line.64"></a>
+<FONT color="green">065</FONT>        public void registerEntityId(String publicId, URL entityURL)<a name="line.65"></a>
+<FONT color="green">066</FONT>        {<a name="line.66"></a>
+<FONT color="green">067</FONT>            if (publicId == null)<a name="line.67"></a>
+<FONT color="green">068</FONT>            {<a name="line.68"></a>
+<FONT color="green">069</FONT>                throw new IllegalArgumentException("Public ID must not be null!");<a name="line.69"></a>
+<FONT color="green">070</FONT>            }<a name="line.70"></a>
+<FONT color="green">071</FONT>            getRegisteredEntities().put(publicId, entityURL);<a name="line.71"></a>
+<FONT color="green">072</FONT>        }<a name="line.72"></a>
+<FONT color="green">073</FONT>    <a name="line.73"></a>
+<FONT color="green">074</FONT>        /**<a name="line.74"></a>
+<FONT color="green">075</FONT>         * Resolves the requested external entity. This is the default<a name="line.75"></a>
+<FONT color="green">076</FONT>         * implementation of the &lt;code&gt;EntityResolver&lt;/code&gt; interface. It checks<a name="line.76"></a>
+<FONT color="green">077</FONT>         * the passed in public ID against the registered entity IDs and uses a<a name="line.77"></a>
+<FONT color="green">078</FONT>         * local URL if possible.<a name="line.78"></a>
+<FONT color="green">079</FONT>         *<a name="line.79"></a>
+<FONT color="green">080</FONT>         * @param publicId the public identifier of the entity being referenced<a name="line.80"></a>
+<FONT color="green">081</FONT>         * @param systemId the system identifier of the entity being referenced<a name="line.81"></a>
+<FONT color="green">082</FONT>         * @return an input source for the specified entity<a name="line.82"></a>
+<FONT color="green">083</FONT>         * @throws org.xml.sax.SAXException if a parsing exception occurs<a name="line.83"></a>
+<FONT color="green">084</FONT>         */<a name="line.84"></a>
+<FONT color="green">085</FONT>        public InputSource resolveEntity(String publicId, String systemId)<a name="line.85"></a>
+<FONT color="green">086</FONT>                throws SAXException<a name="line.86"></a>
+<FONT color="green">087</FONT>        {<a name="line.87"></a>
+<FONT color="green">088</FONT>            // Has this system identifier been registered?<a name="line.88"></a>
+<FONT color="green">089</FONT>            URL entityURL = null;<a name="line.89"></a>
+<FONT color="green">090</FONT>            if (publicId != null)<a name="line.90"></a>
+<FONT color="green">091</FONT>            {<a name="line.91"></a>
+<FONT color="green">092</FONT>                entityURL = (URL) getRegisteredEntities().get(publicId);<a name="line.92"></a>
+<FONT color="green">093</FONT>            }<a name="line.93"></a>
+<FONT color="green">094</FONT>    <a name="line.94"></a>
+<FONT color="green">095</FONT>            if (entityURL != null)<a name="line.95"></a>
+<FONT color="green">096</FONT>            {<a name="line.96"></a>
+<FONT color="green">097</FONT>                // Obtain an InputSource for this URL. This code is based on the<a name="line.97"></a>
+<FONT color="green">098</FONT>                // createInputSourceFromURL() method of Commons Digester.<a name="line.98"></a>
+<FONT color="green">099</FONT>                try<a name="line.99"></a>
+<FONT color="green">100</FONT>                {<a name="line.100"></a>
+<FONT color="green">101</FONT>                    URLConnection connection = entityURL.openConnection();<a name="line.101"></a>
+<FONT color="green">102</FONT>                    connection.setUseCaches(false);<a name="line.102"></a>
+<FONT color="green">103</FONT>                    InputStream stream = connection.getInputStream();<a name="line.103"></a>
+<FONT color="green">104</FONT>                    InputSource source = new InputSource(stream);<a name="line.104"></a>
+<FONT color="green">105</FONT>                    source.setSystemId(entityURL.toExternalForm());<a name="line.105"></a>
+<FONT color="green">106</FONT>                    return source;<a name="line.106"></a>
+<FONT color="green">107</FONT>                }<a name="line.107"></a>
+<FONT color="green">108</FONT>                catch (IOException e)<a name="line.108"></a>
+<FONT color="green">109</FONT>                {<a name="line.109"></a>
+<FONT color="green">110</FONT>                    throw new SAXException(e);<a name="line.110"></a>
+<FONT color="green">111</FONT>                }<a name="line.111"></a>
+<FONT color="green">112</FONT>            }<a name="line.112"></a>
+<FONT color="green">113</FONT>            else<a name="line.113"></a>
+<FONT color="green">114</FONT>            {<a name="line.114"></a>
+<FONT color="green">115</FONT>                // default processing behavior<a name="line.115"></a>
+<FONT color="green">116</FONT>                return null;<a name="line.116"></a>
+<FONT color="green">117</FONT>            }<a name="line.117"></a>
+<FONT color="green">118</FONT>        }<a name="line.118"></a>
+<FONT color="green">119</FONT>    <a name="line.119"></a>
+<FONT color="green">120</FONT>        /**<a name="line.120"></a>
+<FONT color="green">121</FONT>         * Returns a map with the entity IDs that have been registered using the<a name="line.121"></a>
+<FONT color="green">122</FONT>         * &lt;code&gt;registerEntityId()&lt;/code&gt; method.<a name="line.122"></a>
+<FONT color="green">123</FONT>         *<a name="line.123"></a>
+<FONT color="green">124</FONT>         * @return a map with the registered entity IDs<a name="line.124"></a>
+<FONT color="green">125</FONT>         */<a name="line.125"></a>
+<FONT color="green">126</FONT>        public Map getRegisteredEntities()<a name="line.126"></a>
+<FONT color="green">127</FONT>        {<a name="line.127"></a>
+<FONT color="green">128</FONT>            return registeredEntities;<a name="line.128"></a>
+<FONT color="green">129</FONT>        }<a name="line.129"></a>
+<FONT color="green">130</FONT>    }<a name="line.130"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

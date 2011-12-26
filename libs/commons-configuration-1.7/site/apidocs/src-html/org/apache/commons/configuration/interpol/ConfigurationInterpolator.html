@@ -1,0 +1,454 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /*<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Licensed to the Apache Software Foundation (ASF) under one or more<a name="line.2"></a>
+<FONT color="green">003</FONT>     * contributor license agreements.  See the NOTICE file distributed with<a name="line.3"></a>
+<FONT color="green">004</FONT>     * this work for additional information regarding copyright ownership.<a name="line.4"></a>
+<FONT color="green">005</FONT>     * The ASF licenses this file to You under the Apache License, Version 2.0<a name="line.5"></a>
+<FONT color="green">006</FONT>     * (the "License"); you may not use this file except in compliance with<a name="line.6"></a>
+<FONT color="green">007</FONT>     * the License.  You may obtain a copy of the License at<a name="line.7"></a>
+<FONT color="green">008</FONT>     *<a name="line.8"></a>
+<FONT color="green">009</FONT>     *     http://www.apache.org/licenses/LICENSE-2.0<a name="line.9"></a>
+<FONT color="green">010</FONT>     *<a name="line.10"></a>
+<FONT color="green">011</FONT>     * Unless required by applicable law or agreed to in writing, software<a name="line.11"></a>
+<FONT color="green">012</FONT>     * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.12"></a>
+<FONT color="green">013</FONT>     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.13"></a>
+<FONT color="green">014</FONT>     * See the License for the specific language governing permissions and<a name="line.14"></a>
+<FONT color="green">015</FONT>     * limitations under the License.<a name="line.15"></a>
+<FONT color="green">016</FONT>     */<a name="line.16"></a>
+<FONT color="green">017</FONT>    package org.apache.commons.configuration.interpol;<a name="line.17"></a>
+<FONT color="green">018</FONT>    <a name="line.18"></a>
+<FONT color="green">019</FONT>    import java.util.HashMap;<a name="line.19"></a>
+<FONT color="green">020</FONT>    import java.util.Map;<a name="line.20"></a>
+<FONT color="green">021</FONT>    import java.util.Set;<a name="line.21"></a>
+<FONT color="green">022</FONT>    <a name="line.22"></a>
+<FONT color="green">023</FONT>    import org.apache.commons.lang.text.StrLookup;<a name="line.23"></a>
+<FONT color="green">024</FONT>    <a name="line.24"></a>
+<FONT color="green">025</FONT>    /**<a name="line.25"></a>
+<FONT color="green">026</FONT>     * &lt;p&gt;<a name="line.26"></a>
+<FONT color="green">027</FONT>     * A class that handles interpolation (variable substitution) for configuration<a name="line.27"></a>
+<FONT color="green">028</FONT>     * objects.<a name="line.28"></a>
+<FONT color="green">029</FONT>     * &lt;/p&gt;<a name="line.29"></a>
+<FONT color="green">030</FONT>     * &lt;p&gt;<a name="line.30"></a>
+<FONT color="green">031</FONT>     * Each instance of &lt;code&gt;AbstractConfiguration&lt;/code&gt; is associated with an<a name="line.31"></a>
+<FONT color="green">032</FONT>     * object of this class. All interpolation tasks are delegated to this object.<a name="line.32"></a>
+<FONT color="green">033</FONT>     * &lt;/p&gt;<a name="line.33"></a>
+<FONT color="green">034</FONT>     * &lt;p&gt;<a name="line.34"></a>
+<FONT color="green">035</FONT>     * &lt;code&gt;ConfigurationInterpolator&lt;/code&gt; works together with the<a name="line.35"></a>
+<FONT color="green">036</FONT>     * &lt;code&gt;StrSubstitutor&lt;/code&gt; class from &lt;a<a name="line.36"></a>
+<FONT color="green">037</FONT>     * href="http://commons.apache.org/lang"&gt;Commons Lang&lt;/a&gt;. By extending<a name="line.37"></a>
+<FONT color="green">038</FONT>     * &lt;code&gt;StrLookup&lt;/code&gt; it is able to provide values for variables that<a name="line.38"></a>
+<FONT color="green">039</FONT>     * appear in expressions.<a name="line.39"></a>
+<FONT color="green">040</FONT>     * &lt;/p&gt;<a name="line.40"></a>
+<FONT color="green">041</FONT>     * &lt;p&gt;<a name="line.41"></a>
+<FONT color="green">042</FONT>     * The basic idea of this class is that it can maintain a set of primitive<a name="line.42"></a>
+<FONT color="green">043</FONT>     * &lt;code&gt;StrLookup&lt;/code&gt; objects, each of which is identified by a special<a name="line.43"></a>
+<FONT color="green">044</FONT>     * prefix. The variables to be processed have the form<a name="line.44"></a>
+<FONT color="green">045</FONT>     * &lt;code&gt;${prefix:name}&lt;/code&gt;. &lt;code&gt;ConfigurationInterpolator&lt;/code&gt; will<a name="line.45"></a>
+<FONT color="green">046</FONT>     * extract the prefix and determine, which primitive lookup object is registered<a name="line.46"></a>
+<FONT color="green">047</FONT>     * for it. Then the name of the variable is passed to this object to obtain the<a name="line.47"></a>
+<FONT color="green">048</FONT>     * actual value. It is also possible to define a default lookup object, which<a name="line.48"></a>
+<FONT color="green">049</FONT>     * will be used for variables that do not have a prefix or that cannot be<a name="line.49"></a>
+<FONT color="green">050</FONT>     * resolved by their associated lookup object.<a name="line.50"></a>
+<FONT color="green">051</FONT>     * &lt;/p&gt;<a name="line.51"></a>
+<FONT color="green">052</FONT>     * &lt;p&gt;<a name="line.52"></a>
+<FONT color="green">053</FONT>     * When a new instance of this class is created it is initialized with a default<a name="line.53"></a>
+<FONT color="green">054</FONT>     * set of primitive lookup objects. This set can be customized using the static<a name="line.54"></a>
+<FONT color="green">055</FONT>     * methods &lt;code&gt;registerGlobalLookup()&lt;/code&gt; and<a name="line.55"></a>
+<FONT color="green">056</FONT>     * &lt;code&gt;deregisterGlobalLookup()&lt;/code&gt;. Per default it contains the<a name="line.56"></a>
+<FONT color="green">057</FONT>     * following standard lookup objects:<a name="line.57"></a>
+<FONT color="green">058</FONT>     * &lt;/p&gt;<a name="line.58"></a>
+<FONT color="green">059</FONT>     * &lt;p&gt;<a name="line.59"></a>
+<FONT color="green">060</FONT>     * &lt;table border="1"&gt;<a name="line.60"></a>
+<FONT color="green">061</FONT>     * &lt;tr&gt;<a name="line.61"></a>
+<FONT color="green">062</FONT>     * &lt;th&gt;Prefix&lt;/th&gt;<a name="line.62"></a>
+<FONT color="green">063</FONT>     * &lt;th&gt;Lookup object&lt;/th&gt;<a name="line.63"></a>
+<FONT color="green">064</FONT>     * &lt;/tr&gt;<a name="line.64"></a>
+<FONT color="green">065</FONT>     * &lt;tr&gt;<a name="line.65"></a>
+<FONT color="green">066</FONT>     * &lt;td valign="top"&gt;sys&lt;/td&gt;<a name="line.66"></a>
+<FONT color="green">067</FONT>     * &lt;td&gt;With this prefix a lookup object is associated that is able to resolve<a name="line.67"></a>
+<FONT color="green">068</FONT>     * system properties.&lt;/td&gt;<a name="line.68"></a>
+<FONT color="green">069</FONT>     * &lt;/tr&gt;<a name="line.69"></a>
+<FONT color="green">070</FONT>     * &lt;tr&gt;<a name="line.70"></a>
+<FONT color="green">071</FONT>     * &lt;td valign="top"&gt;const&lt;/td&gt;<a name="line.71"></a>
+<FONT color="green">072</FONT>     * &lt;td&gt;The &lt;code&gt;const&lt;/code&gt; prefix indicates that a variable is to be<a name="line.72"></a>
+<FONT color="green">073</FONT>     * interpreted as a constant member field of a class (i.e. a field with the<a name="line.73"></a>
+<FONT color="green">074</FONT>     * &lt;b&gt;static final&lt;/b&gt; modifiers). The name of the variable must be of the form<a name="line.74"></a>
+<FONT color="green">075</FONT>     * &lt;code&gt;&amp;lt;full qualified class name&amp;gt;.&amp;lt;field name&amp;gt;&lt;/code&gt;, e.g.<a name="line.75"></a>
+<FONT color="green">076</FONT>     * &lt;code&gt;org.apache.commons.configuration.interpol.ConfigurationInterpolator.PREFIX_CONSTANTS<a name="line.76"></a>
+<FONT color="green">077</FONT>     * &lt;/code&gt;.&lt;/td&gt;<a name="line.77"></a>
+<FONT color="green">078</FONT>     * &lt;/tr&gt;<a name="line.78"></a>
+<FONT color="green">079</FONT>     * &lt;/table&gt;<a name="line.79"></a>
+<FONT color="green">080</FONT>     * &lt;/p&gt;<a name="line.80"></a>
+<FONT color="green">081</FONT>     * &lt;p&gt;<a name="line.81"></a>
+<FONT color="green">082</FONT>     * After an instance has been created the current set of lookup objects can be<a name="line.82"></a>
+<FONT color="green">083</FONT>     * modified using the &lt;code&gt;registerLookup()&lt;/code&gt; and<a name="line.83"></a>
+<FONT color="green">084</FONT>     * &lt;code&gt;deregisterLookup()&lt;/code&gt; methods. The default lookup object (that is<a name="line.84"></a>
+<FONT color="green">085</FONT>     * invoked for variables without a prefix) can be set with the<a name="line.85"></a>
+<FONT color="green">086</FONT>     * &lt;code&gt;setDefaultLookup()&lt;/code&gt; method. (If a<a name="line.86"></a>
+<FONT color="green">087</FONT>     * &lt;code&gt;ConfigurationInterpolator&lt;/code&gt; instance is created by a<a name="line.87"></a>
+<FONT color="green">088</FONT>     * configuration object, this lookup points to the configuration itself, so that<a name="line.88"></a>
+<FONT color="green">089</FONT>     * variables are resolved using the configuration's properties. This ensures<a name="line.89"></a>
+<FONT color="green">090</FONT>     * backward compatibility to earlier version of Commons Configuration.)<a name="line.90"></a>
+<FONT color="green">091</FONT>     * &lt;/p&gt;<a name="line.91"></a>
+<FONT color="green">092</FONT>     * &lt;p&gt;<a name="line.92"></a>
+<FONT color="green">093</FONT>     * Implementation node: Instances of this class are not thread-safe related to<a name="line.93"></a>
+<FONT color="green">094</FONT>     * modifications of their current set of registered lookup objects. It is<a name="line.94"></a>
+<FONT color="green">095</FONT>     * intended that each instance is associated with a single<a name="line.95"></a>
+<FONT color="green">096</FONT>     * &lt;code&gt;Configuration&lt;/code&gt; object and used for its interpolation tasks.<a name="line.96"></a>
+<FONT color="green">097</FONT>     * &lt;/p&gt;<a name="line.97"></a>
+<FONT color="green">098</FONT>     *<a name="line.98"></a>
+<FONT color="green">099</FONT>     * @version $Id: ConfigurationInterpolator.java 833923 2009-11-08 20:53:52Z oheger $<a name="line.99"></a>
+<FONT color="green">100</FONT>     * @since 1.4<a name="line.100"></a>
+<FONT color="green">101</FONT>     * @author &lt;a<a name="line.101"></a>
+<FONT color="green">102</FONT>     * href="http://commons.apache.org/configuration/team-list.html"&gt;Commons<a name="line.102"></a>
+<FONT color="green">103</FONT>     * Configuration team&lt;/a&gt;<a name="line.103"></a>
+<FONT color="green">104</FONT>     */<a name="line.104"></a>
+<FONT color="green">105</FONT>    public class ConfigurationInterpolator extends StrLookup<a name="line.105"></a>
+<FONT color="green">106</FONT>    {<a name="line.106"></a>
+<FONT color="green">107</FONT>        /**<a name="line.107"></a>
+<FONT color="green">108</FONT>         * Constant for the prefix of the standard lookup object for resolving<a name="line.108"></a>
+<FONT color="green">109</FONT>         * system properties.<a name="line.109"></a>
+<FONT color="green">110</FONT>         */<a name="line.110"></a>
+<FONT color="green">111</FONT>        public static final String PREFIX_SYSPROPERTIES = "sys";<a name="line.111"></a>
+<FONT color="green">112</FONT>    <a name="line.112"></a>
+<FONT color="green">113</FONT>        /**<a name="line.113"></a>
+<FONT color="green">114</FONT>         * Constant for the prefix of the standard lookup object for resolving<a name="line.114"></a>
+<FONT color="green">115</FONT>         * constant values.<a name="line.115"></a>
+<FONT color="green">116</FONT>         */<a name="line.116"></a>
+<FONT color="green">117</FONT>        public static final String PREFIX_CONSTANTS = "const";<a name="line.117"></a>
+<FONT color="green">118</FONT>    <a name="line.118"></a>
+<FONT color="green">119</FONT>        /**<a name="line.119"></a>
+<FONT color="green">120</FONT>         * Constant for the prefix of the standard lookup object for resolving<a name="line.120"></a>
+<FONT color="green">121</FONT>         * environment properties.<a name="line.121"></a>
+<FONT color="green">122</FONT>         * @since 1.7<a name="line.122"></a>
+<FONT color="green">123</FONT>         */<a name="line.123"></a>
+<FONT color="green">124</FONT>        public static final String PREFIX_ENVIRONMENT = "env";<a name="line.124"></a>
+<FONT color="green">125</FONT>    <a name="line.125"></a>
+<FONT color="green">126</FONT>        /** Constant for the prefix separator. */<a name="line.126"></a>
+<FONT color="green">127</FONT>        private static final char PREFIX_SEPARATOR = ':';<a name="line.127"></a>
+<FONT color="green">128</FONT>    <a name="line.128"></a>
+<FONT color="green">129</FONT>        /** A map with the globally registered lookup objects. */<a name="line.129"></a>
+<FONT color="green">130</FONT>        private static Map globalLookups;<a name="line.130"></a>
+<FONT color="green">131</FONT>    <a name="line.131"></a>
+<FONT color="green">132</FONT>        /** A map with the locally registered lookup objects. */<a name="line.132"></a>
+<FONT color="green">133</FONT>        private Map localLookups;<a name="line.133"></a>
+<FONT color="green">134</FONT>    <a name="line.134"></a>
+<FONT color="green">135</FONT>        /** Stores the default lookup object. */<a name="line.135"></a>
+<FONT color="green">136</FONT>        private StrLookup defaultLookup;<a name="line.136"></a>
+<FONT color="green">137</FONT>    <a name="line.137"></a>
+<FONT color="green">138</FONT>        /** Stores a parent interpolator objects if the interpolator is nested hierarchically. */<a name="line.138"></a>
+<FONT color="green">139</FONT>        private ConfigurationInterpolator parentInterpolator;<a name="line.139"></a>
+<FONT color="green">140</FONT>    <a name="line.140"></a>
+<FONT color="green">141</FONT>        /**<a name="line.141"></a>
+<FONT color="green">142</FONT>         * Creates a new instance of &lt;code&gt;ConfigurationInterpolator&lt;/code&gt;.<a name="line.142"></a>
+<FONT color="green">143</FONT>         */<a name="line.143"></a>
+<FONT color="green">144</FONT>        public ConfigurationInterpolator()<a name="line.144"></a>
+<FONT color="green">145</FONT>        {<a name="line.145"></a>
+<FONT color="green">146</FONT>            synchronized (globalLookups)<a name="line.146"></a>
+<FONT color="green">147</FONT>            {<a name="line.147"></a>
+<FONT color="green">148</FONT>                localLookups = new HashMap(globalLookups);<a name="line.148"></a>
+<FONT color="green">149</FONT>            }<a name="line.149"></a>
+<FONT color="green">150</FONT>        }<a name="line.150"></a>
+<FONT color="green">151</FONT>    <a name="line.151"></a>
+<FONT color="green">152</FONT>        /**<a name="line.152"></a>
+<FONT color="green">153</FONT>         * Registers the given lookup object for the specified prefix globally. This<a name="line.153"></a>
+<FONT color="green">154</FONT>         * means that all instances that are created later will use this lookup<a name="line.154"></a>
+<FONT color="green">155</FONT>         * object for this prefix. If for this prefix a lookup object is already<a name="line.155"></a>
+<FONT color="green">156</FONT>         * registered, the new lookup object will replace the old one. Note that the<a name="line.156"></a>
+<FONT color="green">157</FONT>         * lookup objects registered here will be shared between multiple clients.<a name="line.157"></a>
+<FONT color="green">158</FONT>         * So they should be thread-safe.<a name="line.158"></a>
+<FONT color="green">159</FONT>         *<a name="line.159"></a>
+<FONT color="green">160</FONT>         * @param prefix the variable prefix (must not be &lt;b&gt;null&lt;/b&gt;)<a name="line.160"></a>
+<FONT color="green">161</FONT>         * @param lookup the lookup object to be used for this prefix (must not be<a name="line.161"></a>
+<FONT color="green">162</FONT>         * &lt;b&gt;null&lt;/b&gt;)<a name="line.162"></a>
+<FONT color="green">163</FONT>         */<a name="line.163"></a>
+<FONT color="green">164</FONT>        public static void registerGlobalLookup(String prefix, StrLookup lookup)<a name="line.164"></a>
+<FONT color="green">165</FONT>        {<a name="line.165"></a>
+<FONT color="green">166</FONT>            if (prefix == null)<a name="line.166"></a>
+<FONT color="green">167</FONT>            {<a name="line.167"></a>
+<FONT color="green">168</FONT>                throw new IllegalArgumentException(<a name="line.168"></a>
+<FONT color="green">169</FONT>                        "Prefix for lookup object must not be null!");<a name="line.169"></a>
+<FONT color="green">170</FONT>            }<a name="line.170"></a>
+<FONT color="green">171</FONT>            if (lookup == null)<a name="line.171"></a>
+<FONT color="green">172</FONT>            {<a name="line.172"></a>
+<FONT color="green">173</FONT>                throw new IllegalArgumentException(<a name="line.173"></a>
+<FONT color="green">174</FONT>                        "Lookup object must not be null!");<a name="line.174"></a>
+<FONT color="green">175</FONT>            }<a name="line.175"></a>
+<FONT color="green">176</FONT>            synchronized (globalLookups)<a name="line.176"></a>
+<FONT color="green">177</FONT>            {<a name="line.177"></a>
+<FONT color="green">178</FONT>                globalLookups.put(prefix, lookup);<a name="line.178"></a>
+<FONT color="green">179</FONT>            }<a name="line.179"></a>
+<FONT color="green">180</FONT>        }<a name="line.180"></a>
+<FONT color="green">181</FONT>    <a name="line.181"></a>
+<FONT color="green">182</FONT>        /**<a name="line.182"></a>
+<FONT color="green">183</FONT>         * Deregisters the global lookup object for the specified prefix. This means<a name="line.183"></a>
+<FONT color="green">184</FONT>         * that this lookup object won't be available for later created instances<a name="line.184"></a>
+<FONT color="green">185</FONT>         * any more. For already existing instances this operation does not have any<a name="line.185"></a>
+<FONT color="green">186</FONT>         * impact.<a name="line.186"></a>
+<FONT color="green">187</FONT>         *<a name="line.187"></a>
+<FONT color="green">188</FONT>         * @param prefix the variable prefix<a name="line.188"></a>
+<FONT color="green">189</FONT>         * @return a flag whether for this prefix a lookup object had been<a name="line.189"></a>
+<FONT color="green">190</FONT>         * registered<a name="line.190"></a>
+<FONT color="green">191</FONT>         */<a name="line.191"></a>
+<FONT color="green">192</FONT>        public static boolean deregisterGlobalLookup(String prefix)<a name="line.192"></a>
+<FONT color="green">193</FONT>        {<a name="line.193"></a>
+<FONT color="green">194</FONT>            synchronized (globalLookups)<a name="line.194"></a>
+<FONT color="green">195</FONT>            {<a name="line.195"></a>
+<FONT color="green">196</FONT>                return globalLookups.remove(prefix) != null;<a name="line.196"></a>
+<FONT color="green">197</FONT>            }<a name="line.197"></a>
+<FONT color="green">198</FONT>        }<a name="line.198"></a>
+<FONT color="green">199</FONT>    <a name="line.199"></a>
+<FONT color="green">200</FONT>        /**<a name="line.200"></a>
+<FONT color="green">201</FONT>         * Registers the given lookup object for the specified prefix at this<a name="line.201"></a>
+<FONT color="green">202</FONT>         * instance. From now on this lookup object will be used for variables that<a name="line.202"></a>
+<FONT color="green">203</FONT>         * have the specified prefix.<a name="line.203"></a>
+<FONT color="green">204</FONT>         *<a name="line.204"></a>
+<FONT color="green">205</FONT>         * @param prefix the variable prefix (must not be &lt;b&gt;null&lt;/b&gt;)<a name="line.205"></a>
+<FONT color="green">206</FONT>         * @param lookup the lookup object to be used for this prefix (must not be<a name="line.206"></a>
+<FONT color="green">207</FONT>         * &lt;b&gt;null&lt;/b&gt;)<a name="line.207"></a>
+<FONT color="green">208</FONT>         */<a name="line.208"></a>
+<FONT color="green">209</FONT>        public void registerLookup(String prefix, StrLookup lookup)<a name="line.209"></a>
+<FONT color="green">210</FONT>        {<a name="line.210"></a>
+<FONT color="green">211</FONT>            if (prefix == null)<a name="line.211"></a>
+<FONT color="green">212</FONT>            {<a name="line.212"></a>
+<FONT color="green">213</FONT>                throw new IllegalArgumentException(<a name="line.213"></a>
+<FONT color="green">214</FONT>                        "Prefix for lookup object must not be null!");<a name="line.214"></a>
+<FONT color="green">215</FONT>            }<a name="line.215"></a>
+<FONT color="green">216</FONT>            if (lookup == null)<a name="line.216"></a>
+<FONT color="green">217</FONT>            {<a name="line.217"></a>
+<FONT color="green">218</FONT>                throw new IllegalArgumentException(<a name="line.218"></a>
+<FONT color="green">219</FONT>                        "Lookup object must not be null!");<a name="line.219"></a>
+<FONT color="green">220</FONT>            }<a name="line.220"></a>
+<FONT color="green">221</FONT>            localLookups.put(prefix, lookup);<a name="line.221"></a>
+<FONT color="green">222</FONT>        }<a name="line.222"></a>
+<FONT color="green">223</FONT>    <a name="line.223"></a>
+<FONT color="green">224</FONT>        /**<a name="line.224"></a>
+<FONT color="green">225</FONT>         * Deregisters the lookup object for the specified prefix at this instance.<a name="line.225"></a>
+<FONT color="green">226</FONT>         * It will be removed from this instance.<a name="line.226"></a>
+<FONT color="green">227</FONT>         *<a name="line.227"></a>
+<FONT color="green">228</FONT>         * @param prefix the variable prefix<a name="line.228"></a>
+<FONT color="green">229</FONT>         * @return a flag whether for this prefix a lookup object had been<a name="line.229"></a>
+<FONT color="green">230</FONT>         * registered<a name="line.230"></a>
+<FONT color="green">231</FONT>         */<a name="line.231"></a>
+<FONT color="green">232</FONT>        public boolean deregisterLookup(String prefix)<a name="line.232"></a>
+<FONT color="green">233</FONT>        {<a name="line.233"></a>
+<FONT color="green">234</FONT>            return localLookups.remove(prefix) != null;<a name="line.234"></a>
+<FONT color="green">235</FONT>        }<a name="line.235"></a>
+<FONT color="green">236</FONT>    <a name="line.236"></a>
+<FONT color="green">237</FONT>        /**<a name="line.237"></a>
+<FONT color="green">238</FONT>         * Returns a set with the prefixes, for which lookup objects are registered<a name="line.238"></a>
+<FONT color="green">239</FONT>         * at this instance. This means that variables with these prefixes can be<a name="line.239"></a>
+<FONT color="green">240</FONT>         * processed.<a name="line.240"></a>
+<FONT color="green">241</FONT>         *<a name="line.241"></a>
+<FONT color="green">242</FONT>         * @return a set with the registered variable prefixes<a name="line.242"></a>
+<FONT color="green">243</FONT>         */<a name="line.243"></a>
+<FONT color="green">244</FONT>        public Set prefixSet()<a name="line.244"></a>
+<FONT color="green">245</FONT>        {<a name="line.245"></a>
+<FONT color="green">246</FONT>            return localLookups.keySet();<a name="line.246"></a>
+<FONT color="green">247</FONT>        }<a name="line.247"></a>
+<FONT color="green">248</FONT>    <a name="line.248"></a>
+<FONT color="green">249</FONT>        /**<a name="line.249"></a>
+<FONT color="green">250</FONT>         * Returns the default lookup object.<a name="line.250"></a>
+<FONT color="green">251</FONT>         *<a name="line.251"></a>
+<FONT color="green">252</FONT>         * @return the default lookup object<a name="line.252"></a>
+<FONT color="green">253</FONT>         */<a name="line.253"></a>
+<FONT color="green">254</FONT>        public StrLookup getDefaultLookup()<a name="line.254"></a>
+<FONT color="green">255</FONT>        {<a name="line.255"></a>
+<FONT color="green">256</FONT>            return defaultLookup;<a name="line.256"></a>
+<FONT color="green">257</FONT>        }<a name="line.257"></a>
+<FONT color="green">258</FONT>    <a name="line.258"></a>
+<FONT color="green">259</FONT>        /**<a name="line.259"></a>
+<FONT color="green">260</FONT>         * Sets the default lookup object. This lookup object will be used for all<a name="line.260"></a>
+<FONT color="green">261</FONT>         * variables without a special prefix. If it is set to &lt;b&gt;null&lt;/b&gt;, such<a name="line.261"></a>
+<FONT color="green">262</FONT>         * variables won't be processed.<a name="line.262"></a>
+<FONT color="green">263</FONT>         *<a name="line.263"></a>
+<FONT color="green">264</FONT>         * @param defaultLookup the new default lookup object<a name="line.264"></a>
+<FONT color="green">265</FONT>         */<a name="line.265"></a>
+<FONT color="green">266</FONT>        public void setDefaultLookup(StrLookup defaultLookup)<a name="line.266"></a>
+<FONT color="green">267</FONT>        {<a name="line.267"></a>
+<FONT color="green">268</FONT>            this.defaultLookup = defaultLookup;<a name="line.268"></a>
+<FONT color="green">269</FONT>        }<a name="line.269"></a>
+<FONT color="green">270</FONT>    <a name="line.270"></a>
+<FONT color="green">271</FONT>        /**<a name="line.271"></a>
+<FONT color="green">272</FONT>         * Resolves the specified variable. This implementation will try to extract<a name="line.272"></a>
+<FONT color="green">273</FONT>         * a variable prefix from the given variable name (the first colon (':') is<a name="line.273"></a>
+<FONT color="green">274</FONT>         * used as prefix separator). It then passes the name of the variable with<a name="line.274"></a>
+<FONT color="green">275</FONT>         * the prefix stripped to the lookup object registered for this prefix. If<a name="line.275"></a>
+<FONT color="green">276</FONT>         * no prefix can be found or if the associated lookup object cannot resolve<a name="line.276"></a>
+<FONT color="green">277</FONT>         * this variable, the default lookup object will be used.<a name="line.277"></a>
+<FONT color="green">278</FONT>         *<a name="line.278"></a>
+<FONT color="green">279</FONT>         * @param var the name of the variable whose value is to be looked up<a name="line.279"></a>
+<FONT color="green">280</FONT>         * @return the value of this variable or &lt;b&gt;null&lt;/b&gt; if it cannot be<a name="line.280"></a>
+<FONT color="green">281</FONT>         * resolved<a name="line.281"></a>
+<FONT color="green">282</FONT>         */<a name="line.282"></a>
+<FONT color="green">283</FONT>        public String lookup(String var)<a name="line.283"></a>
+<FONT color="green">284</FONT>        {<a name="line.284"></a>
+<FONT color="green">285</FONT>            if (var == null)<a name="line.285"></a>
+<FONT color="green">286</FONT>            {<a name="line.286"></a>
+<FONT color="green">287</FONT>                return null;<a name="line.287"></a>
+<FONT color="green">288</FONT>            }<a name="line.288"></a>
+<FONT color="green">289</FONT>    <a name="line.289"></a>
+<FONT color="green">290</FONT>            int prefixPos = var.indexOf(PREFIX_SEPARATOR);<a name="line.290"></a>
+<FONT color="green">291</FONT>            if (prefixPos &gt;= 0)<a name="line.291"></a>
+<FONT color="green">292</FONT>            {<a name="line.292"></a>
+<FONT color="green">293</FONT>                String prefix = var.substring(0, prefixPos);<a name="line.293"></a>
+<FONT color="green">294</FONT>                String name = var.substring(prefixPos + 1);<a name="line.294"></a>
+<FONT color="green">295</FONT>                String value = fetchLookupForPrefix(prefix).lookup(name);<a name="line.295"></a>
+<FONT color="green">296</FONT>                if (value == null &amp;&amp; getParentInterpolator() != null)<a name="line.296"></a>
+<FONT color="green">297</FONT>                {<a name="line.297"></a>
+<FONT color="green">298</FONT>                    value = getParentInterpolator().fetchLookupForPrefix(prefix).lookup(name);<a name="line.298"></a>
+<FONT color="green">299</FONT>                }<a name="line.299"></a>
+<FONT color="green">300</FONT>                if (value != null)<a name="line.300"></a>
+<FONT color="green">301</FONT>                {<a name="line.301"></a>
+<FONT color="green">302</FONT>                    return value;<a name="line.302"></a>
+<FONT color="green">303</FONT>                }<a name="line.303"></a>
+<FONT color="green">304</FONT>            }<a name="line.304"></a>
+<FONT color="green">305</FONT>            String value = fetchNoPrefixLookup().lookup(var);<a name="line.305"></a>
+<FONT color="green">306</FONT>            if (value == null &amp;&amp; getParentInterpolator() != null)<a name="line.306"></a>
+<FONT color="green">307</FONT>            {<a name="line.307"></a>
+<FONT color="green">308</FONT>                value = getParentInterpolator().fetchNoPrefixLookup().lookup(var);<a name="line.308"></a>
+<FONT color="green">309</FONT>            }<a name="line.309"></a>
+<FONT color="green">310</FONT>            return value;<a name="line.310"></a>
+<FONT color="green">311</FONT>        }<a name="line.311"></a>
+<FONT color="green">312</FONT>    <a name="line.312"></a>
+<FONT color="green">313</FONT>        /**<a name="line.313"></a>
+<FONT color="green">314</FONT>         * Returns the lookup object to be used for variables without a prefix. This<a name="line.314"></a>
+<FONT color="green">315</FONT>         * implementation will check whether a default lookup object was set. If<a name="line.315"></a>
+<FONT color="green">316</FONT>         * this is the case, it will be returned. Otherwise a &lt;b&gt;null&lt;/b&gt; lookup<a name="line.316"></a>
+<FONT color="green">317</FONT>         * object will be returned (never &lt;code&gt;null&lt;/code&gt;).<a name="line.317"></a>
+<FONT color="green">318</FONT>         *<a name="line.318"></a>
+<FONT color="green">319</FONT>         * @return the lookup object to be used for variables without a prefix<a name="line.319"></a>
+<FONT color="green">320</FONT>         */<a name="line.320"></a>
+<FONT color="green">321</FONT>        protected StrLookup fetchNoPrefixLookup()<a name="line.321"></a>
+<FONT color="green">322</FONT>        {<a name="line.322"></a>
+<FONT color="green">323</FONT>            return (getDefaultLookup() != null) ? getDefaultLookup() : StrLookup.noneLookup();<a name="line.323"></a>
+<FONT color="green">324</FONT>        }<a name="line.324"></a>
+<FONT color="green">325</FONT>    <a name="line.325"></a>
+<FONT color="green">326</FONT>        /**<a name="line.326"></a>
+<FONT color="green">327</FONT>         * Obtains the lookup object for the specified prefix. This method is called<a name="line.327"></a>
+<FONT color="green">328</FONT>         * by the &lt;code&gt;lookup()&lt;/code&gt; method. This implementation will check<a name="line.328"></a>
+<FONT color="green">329</FONT>         * whether a lookup object is registered for the given prefix. If not, a<a name="line.329"></a>
+<FONT color="green">330</FONT>         * &lt;b&gt;null&lt;/b&gt; lookup object will be returned (never &lt;code&gt;null&lt;/code&gt;).<a name="line.330"></a>
+<FONT color="green">331</FONT>         *<a name="line.331"></a>
+<FONT color="green">332</FONT>         * @param prefix the prefix<a name="line.332"></a>
+<FONT color="green">333</FONT>         * @return the lookup object to be used for this prefix<a name="line.333"></a>
+<FONT color="green">334</FONT>         */<a name="line.334"></a>
+<FONT color="green">335</FONT>        protected StrLookup fetchLookupForPrefix(String prefix)<a name="line.335"></a>
+<FONT color="green">336</FONT>        {<a name="line.336"></a>
+<FONT color="green">337</FONT>            StrLookup lookup = (StrLookup) localLookups.get(prefix);<a name="line.337"></a>
+<FONT color="green">338</FONT>            if (lookup == null)<a name="line.338"></a>
+<FONT color="green">339</FONT>            {<a name="line.339"></a>
+<FONT color="green">340</FONT>                lookup = StrLookup.noneLookup();<a name="line.340"></a>
+<FONT color="green">341</FONT>            }<a name="line.341"></a>
+<FONT color="green">342</FONT>            return lookup;<a name="line.342"></a>
+<FONT color="green">343</FONT>        }<a name="line.343"></a>
+<FONT color="green">344</FONT>    <a name="line.344"></a>
+<FONT color="green">345</FONT>        /**<a name="line.345"></a>
+<FONT color="green">346</FONT>         * Registers the local lookup instances for the given interpolator.<a name="line.346"></a>
+<FONT color="green">347</FONT>         *<a name="line.347"></a>
+<FONT color="green">348</FONT>         * @param interpolator the instance receiving the local lookups<a name="line.348"></a>
+<FONT color="green">349</FONT>         * @since upcoming<a name="line.349"></a>
+<FONT color="green">350</FONT>         */<a name="line.350"></a>
+<FONT color="green">351</FONT>        public void registerLocalLookups(ConfigurationInterpolator interpolator)<a name="line.351"></a>
+<FONT color="green">352</FONT>        {<a name="line.352"></a>
+<FONT color="green">353</FONT>            interpolator.localLookups.putAll(localLookups);<a name="line.353"></a>
+<FONT color="green">354</FONT>        }<a name="line.354"></a>
+<FONT color="green">355</FONT>    <a name="line.355"></a>
+<FONT color="green">356</FONT>        /**<a name="line.356"></a>
+<FONT color="green">357</FONT>         * Sets the parent interpolator. This object is used if the interpolation is nested<a name="line.357"></a>
+<FONT color="green">358</FONT>         * hierarchically and the current interpolation object cannot resolve a variable.<a name="line.358"></a>
+<FONT color="green">359</FONT>         *<a name="line.359"></a>
+<FONT color="green">360</FONT>         * @param parentInterpolator the parent interpolator object or &lt;code&gt;null&lt;/code&gt;<a name="line.360"></a>
+<FONT color="green">361</FONT>         * @since upcoming<a name="line.361"></a>
+<FONT color="green">362</FONT>         */<a name="line.362"></a>
+<FONT color="green">363</FONT>        public void setParentInterpolator(ConfigurationInterpolator parentInterpolator)<a name="line.363"></a>
+<FONT color="green">364</FONT>        {<a name="line.364"></a>
+<FONT color="green">365</FONT>            this.parentInterpolator = parentInterpolator;<a name="line.365"></a>
+<FONT color="green">366</FONT>        }<a name="line.366"></a>
+<FONT color="green">367</FONT>    <a name="line.367"></a>
+<FONT color="green">368</FONT>        /**<a name="line.368"></a>
+<FONT color="green">369</FONT>         * Requests the parent interpolator. This object is used if the interpolation is nested<a name="line.369"></a>
+<FONT color="green">370</FONT>         * hierarchically and the current interpolation<a name="line.370"></a>
+<FONT color="green">371</FONT>         *<a name="line.371"></a>
+<FONT color="green">372</FONT>         * @return the parent interpolator or &lt;code&gt;null&lt;/code&gt;<a name="line.372"></a>
+<FONT color="green">373</FONT>         * @since upcoming<a name="line.373"></a>
+<FONT color="green">374</FONT>         */<a name="line.374"></a>
+<FONT color="green">375</FONT>        public ConfigurationInterpolator getParentInterpolator()<a name="line.375"></a>
+<FONT color="green">376</FONT>        {<a name="line.376"></a>
+<FONT color="green">377</FONT>            return this.parentInterpolator;<a name="line.377"></a>
+<FONT color="green">378</FONT>        }<a name="line.378"></a>
+<FONT color="green">379</FONT>    <a name="line.379"></a>
+<FONT color="green">380</FONT>        // static initializer, sets up the map with the standard lookups<a name="line.380"></a>
+<FONT color="green">381</FONT>        static<a name="line.381"></a>
+<FONT color="green">382</FONT>        {<a name="line.382"></a>
+<FONT color="green">383</FONT>            globalLookups = new HashMap();<a name="line.383"></a>
+<FONT color="green">384</FONT>            globalLookups.put(PREFIX_SYSPROPERTIES, StrLookup.systemPropertiesLookup());<a name="line.384"></a>
+<FONT color="green">385</FONT>            globalLookups.put(PREFIX_CONSTANTS, new ConstantLookup());<a name="line.385"></a>
+<FONT color="green">386</FONT>            globalLookups.put(PREFIX_ENVIRONMENT, new EnvironmentLookup());<a name="line.386"></a>
+<FONT color="green">387</FONT>        }<a name="line.387"></a>
+<FONT color="green">388</FONT>    }<a name="line.388"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

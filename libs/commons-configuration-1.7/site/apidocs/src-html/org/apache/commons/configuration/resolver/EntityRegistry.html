@@ -1,0 +1,129 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /*<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Licensed to the Apache Software Foundation (ASF) under one or more<a name="line.2"></a>
+<FONT color="green">003</FONT>     * contributor license agreements.  See the NOTICE file distributed with<a name="line.3"></a>
+<FONT color="green">004</FONT>     * this work for additional information regarding copyright ownership.<a name="line.4"></a>
+<FONT color="green">005</FONT>     * The ASF licenses this file to You under the Apache License, Version 2.0<a name="line.5"></a>
+<FONT color="green">006</FONT>     * (the "License"); you may not use this file except in compliance with<a name="line.6"></a>
+<FONT color="green">007</FONT>     * the License.  You may obtain a copy of the License at<a name="line.7"></a>
+<FONT color="green">008</FONT>     *<a name="line.8"></a>
+<FONT color="green">009</FONT>     *     http://www.apache.org/licenses/LICENSE-2.0<a name="line.9"></a>
+<FONT color="green">010</FONT>     *<a name="line.10"></a>
+<FONT color="green">011</FONT>     * Unless required by applicable law or agreed to in writing, software<a name="line.11"></a>
+<FONT color="green">012</FONT>     * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.12"></a>
+<FONT color="green">013</FONT>     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.13"></a>
+<FONT color="green">014</FONT>     * See the License for the specific language governing permissions and<a name="line.14"></a>
+<FONT color="green">015</FONT>     * limitations under the License.<a name="line.15"></a>
+<FONT color="green">016</FONT>     */<a name="line.16"></a>
+<FONT color="green">017</FONT>    package org.apache.commons.configuration.resolver;<a name="line.17"></a>
+<FONT color="green">018</FONT>    <a name="line.18"></a>
+<FONT color="green">019</FONT>    import java.net.URL;<a name="line.19"></a>
+<FONT color="green">020</FONT>    import java.util.Map;<a name="line.20"></a>
+<FONT color="green">021</FONT>    <a name="line.21"></a>
+<FONT color="green">022</FONT>    /**<a name="line.22"></a>
+<FONT color="green">023</FONT>     * Interface used for registering and retrieving PUBLICID to URL mappings.<a name="line.23"></a>
+<FONT color="green">024</FONT>     * @author &lt;a<a name="line.24"></a>
+<FONT color="green">025</FONT>     * href="http://commons.apache.org/configuration/team-list.html"&gt;Commons<a name="line.25"></a>
+<FONT color="green">026</FONT>     * Configuration team&lt;/a&gt;<a name="line.26"></a>
+<FONT color="green">027</FONT>     * @since 1.7<a name="line.27"></a>
+<FONT color="green">028</FONT>     * @version $Id: EntityRegistry.java 729581 2008-12-27 02:27:49Z rgoers $<a name="line.28"></a>
+<FONT color="green">029</FONT>     */<a name="line.29"></a>
+<FONT color="green">030</FONT>    public interface EntityRegistry<a name="line.30"></a>
+<FONT color="green">031</FONT>    {<a name="line.31"></a>
+<FONT color="green">032</FONT>        /**<a name="line.32"></a>
+<FONT color="green">033</FONT>         * &lt;p&gt;<a name="line.33"></a>
+<FONT color="green">034</FONT>         * Registers the specified URL for the specified public identifier.<a name="line.34"></a>
+<FONT color="green">035</FONT>         * &lt;/p&gt;<a name="line.35"></a>
+<FONT color="green">036</FONT>         * &lt;p&gt;<a name="line.36"></a>
+<FONT color="green">037</FONT>         * This implementation maps &lt;code&gt;PUBLICID&lt;/code&gt;'s to URLs (from which<a name="line.37"></a>
+<FONT color="green">038</FONT>         * the resource will be loaded). A common use case for this method is to<a name="line.38"></a>
+<FONT color="green">039</FONT>         * register local URLs (possibly computed at runtime by a class loader) for<a name="line.39"></a>
+<FONT color="green">040</FONT>         * DTDs and Schemas. This allows the performance advantage of using a local<a name="line.40"></a>
+<FONT color="green">041</FONT>         * version without having to ensure every &lt;code&gt;SYSTEM&lt;/code&gt; URI on every<a name="line.41"></a>
+<FONT color="green">042</FONT>         * processed XML document is local. This implementation provides only basic<a name="line.42"></a>
+<FONT color="green">043</FONT>         * functionality. If more sophisticated features are required, either calling<a name="line.43"></a>
+<FONT color="green">044</FONT>         * &lt;code&gt;XMLConfiguration.setDocumentBuilder(DocumentBuilder)&lt;code&gt; to set a custom<a name="line.44"></a>
+<FONT color="green">045</FONT>         * &lt;code&gt;DocumentBuilder&lt;/code&gt; (which also can be initialized with a<a name="line.45"></a>
+<FONT color="green">046</FONT>         * custom &lt;code&gt;EntityResolver&lt;/code&gt;) or creating a custom entity resolver<a name="line.46"></a>
+<FONT color="green">047</FONT>         * and registering it with the XMLConfiguration is recommended.<a name="line.47"></a>
+<FONT color="green">048</FONT>         * &lt;/p&gt;<a name="line.48"></a>
+<FONT color="green">049</FONT>         *<a name="line.49"></a>
+<FONT color="green">050</FONT>         * @param publicId Public identifier of the Entity to be resolved<a name="line.50"></a>
+<FONT color="green">051</FONT>         * @param entityURL The URL to use for reading this Entity<a name="line.51"></a>
+<FONT color="green">052</FONT>         * @throws IllegalArgumentException if the public ID is undefined<a name="line.52"></a>
+<FONT color="green">053</FONT>         */<a name="line.53"></a>
+<FONT color="green">054</FONT>        void registerEntityId(String publicId, URL entityURL);<a name="line.54"></a>
+<FONT color="green">055</FONT>    <a name="line.55"></a>
+<FONT color="green">056</FONT>        /**<a name="line.56"></a>
+<FONT color="green">057</FONT>         * Returns a map with the entity IDs that have been registered using the<a name="line.57"></a>
+<FONT color="green">058</FONT>         * &lt;code&gt;registerEntityId()&lt;/code&gt; method.<a name="line.58"></a>
+<FONT color="green">059</FONT>         *<a name="line.59"></a>
+<FONT color="green">060</FONT>         * @return a map with the registered entity IDs<a name="line.60"></a>
+<FONT color="green">061</FONT>         */<a name="line.61"></a>
+<FONT color="green">062</FONT>        Map getRegisteredEntities();<a name="line.62"></a>
+<FONT color="green">063</FONT>    }<a name="line.63"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

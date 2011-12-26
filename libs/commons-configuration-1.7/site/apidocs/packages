@@ -1,0 +1,10 @@
+org.apache.commons.configuration
+org.apache.commons.configuration.beanutils
+org.apache.commons.configuration.event
+org.apache.commons.configuration.interpol
+org.apache.commons.configuration.plist
+org.apache.commons.configuration.reloading
+org.apache.commons.configuration.resolver
+org.apache.commons.configuration.tree
+org.apache.commons.configuration.tree.xpath
+org.apache.commons.configuration.web

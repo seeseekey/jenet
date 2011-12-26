@@ -1,0 +1,743 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /*<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Licensed to the Apache Software Foundation (ASF) under one or more<a name="line.2"></a>
+<FONT color="green">003</FONT>     * contributor license agreements.  See the NOTICE file distributed with<a name="line.3"></a>
+<FONT color="green">004</FONT>     * this work for additional information regarding copyright ownership.<a name="line.4"></a>
+<FONT color="green">005</FONT>     * The ASF licenses this file to You under the Apache License, Version 2.0<a name="line.5"></a>
+<FONT color="green">006</FONT>     * (the "License"); you may not use this file except in compliance with<a name="line.6"></a>
+<FONT color="green">007</FONT>     * the License.  You may obtain a copy of the License at<a name="line.7"></a>
+<FONT color="green">008</FONT>     *<a name="line.8"></a>
+<FONT color="green">009</FONT>     *     http://www.apache.org/licenses/LICENSE-2.0<a name="line.9"></a>
+<FONT color="green">010</FONT>     *<a name="line.10"></a>
+<FONT color="green">011</FONT>     * Unless required by applicable law or agreed to in writing, software<a name="line.11"></a>
+<FONT color="green">012</FONT>     * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.12"></a>
+<FONT color="green">013</FONT>     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.13"></a>
+<FONT color="green">014</FONT>     * See the License for the specific language governing permissions and<a name="line.14"></a>
+<FONT color="green">015</FONT>     * limitations under the License.<a name="line.15"></a>
+<FONT color="green">016</FONT>     */<a name="line.16"></a>
+<FONT color="green">017</FONT>    <a name="line.17"></a>
+<FONT color="green">018</FONT>    package org.apache.commons.configuration;<a name="line.18"></a>
+<FONT color="green">019</FONT>    <a name="line.19"></a>
+<FONT color="green">020</FONT>    import java.io.Serializable;<a name="line.20"></a>
+<FONT color="green">021</FONT>    import java.util.Iterator;<a name="line.21"></a>
+<FONT color="green">022</FONT>    import java.util.NoSuchElementException;<a name="line.22"></a>
+<FONT color="green">023</FONT>    <a name="line.23"></a>
+<FONT color="green">024</FONT>    /**<a name="line.24"></a>
+<FONT color="green">025</FONT>     * &lt;p&gt;A simple class that supports creation of and iteration on complex<a name="line.25"></a>
+<FONT color="green">026</FONT>     * configuration keys.&lt;/p&gt;<a name="line.26"></a>
+<FONT color="green">027</FONT>     *<a name="line.27"></a>
+<FONT color="green">028</FONT>     * &lt;p&gt;For key creation the class works similar to a StringBuffer: There are<a name="line.28"></a>
+<FONT color="green">029</FONT>     * several &lt;code&gt;appendXXXX()&lt;/code&gt; methods with which single parts<a name="line.29"></a>
+<FONT color="green">030</FONT>     * of a key can be constructed. All these methods return a reference to the<a name="line.30"></a>
+<FONT color="green">031</FONT>     * actual object so they can be written in a chain. When using this methods<a name="line.31"></a>
+<FONT color="green">032</FONT>     * the exact syntax for keys need not be known.&lt;/p&gt;<a name="line.32"></a>
+<FONT color="green">033</FONT>     *<a name="line.33"></a>
+<FONT color="green">034</FONT>     * &lt;p&gt;This class also defines a specialized iterator for configuration keys.<a name="line.34"></a>
+<FONT color="green">035</FONT>     * With such an iterator a key can be tokenized into its single parts. For<a name="line.35"></a>
+<FONT color="green">036</FONT>     * each part it can be checked whether it has an associated index.&lt;/p&gt;<a name="line.36"></a>
+<FONT color="green">037</FONT>     *<a name="line.37"></a>
+<FONT color="green">038</FONT>     * @author &lt;a href="mailto:oliver.heger@t-online.de"&gt;Oliver Heger&lt;/a&gt;<a name="line.38"></a>
+<FONT color="green">039</FONT>     * @version $Id: ConfigurationKey.java 726809 2008-12-15 21:29:56Z oheger $<a name="line.39"></a>
+<FONT color="green">040</FONT>     */<a name="line.40"></a>
+<FONT color="green">041</FONT>    public class ConfigurationKey implements Serializable<a name="line.41"></a>
+<FONT color="green">042</FONT>    {<a name="line.42"></a>
+<FONT color="green">043</FONT>        /** Constant for a property delimiter.*/<a name="line.43"></a>
+<FONT color="green">044</FONT>        public static final char PROPERTY_DELIMITER = '.';<a name="line.44"></a>
+<FONT color="green">045</FONT>    <a name="line.45"></a>
+<FONT color="green">046</FONT>        /** Constant for an escaped delimiter. */<a name="line.46"></a>
+<FONT color="green">047</FONT>        public static final String ESCAPED_DELIMITER =<a name="line.47"></a>
+<FONT color="green">048</FONT>            String.valueOf(PROPERTY_DELIMITER) + String.valueOf(PROPERTY_DELIMITER);<a name="line.48"></a>
+<FONT color="green">049</FONT>    <a name="line.49"></a>
+<FONT color="green">050</FONT>        /** Constant for an attribute start marker.*/<a name="line.50"></a>
+<FONT color="green">051</FONT>        private static final String ATTRIBUTE_START = "[@";<a name="line.51"></a>
+<FONT color="green">052</FONT>    <a name="line.52"></a>
+<FONT color="green">053</FONT>        /** Constant for an attribute end marker.*/<a name="line.53"></a>
+<FONT color="green">054</FONT>        private static final String ATTRIBUTE_END = "]";<a name="line.54"></a>
+<FONT color="green">055</FONT>    <a name="line.55"></a>
+<FONT color="green">056</FONT>        /** Constant for an index start marker.*/<a name="line.56"></a>
+<FONT color="green">057</FONT>        private static final char INDEX_START = '(';<a name="line.57"></a>
+<FONT color="green">058</FONT>    <a name="line.58"></a>
+<FONT color="green">059</FONT>        /** Constant for an index end marker.*/<a name="line.59"></a>
+<FONT color="green">060</FONT>        private static final char INDEX_END = ')';<a name="line.60"></a>
+<FONT color="green">061</FONT>    <a name="line.61"></a>
+<FONT color="green">062</FONT>        /** Constant for the initial StringBuffer size.*/<a name="line.62"></a>
+<FONT color="green">063</FONT>        private static final int INITIAL_SIZE = 32;<a name="line.63"></a>
+<FONT color="green">064</FONT>    <a name="line.64"></a>
+<FONT color="green">065</FONT>        /**<a name="line.65"></a>
+<FONT color="green">066</FONT>         * The serial version ID.<a name="line.66"></a>
+<FONT color="green">067</FONT>         */<a name="line.67"></a>
+<FONT color="green">068</FONT>        private static final long serialVersionUID = -4299732083605277656L;<a name="line.68"></a>
+<FONT color="green">069</FONT>    <a name="line.69"></a>
+<FONT color="green">070</FONT>        /** Holds a buffer with the so far created key.*/<a name="line.70"></a>
+<FONT color="green">071</FONT>        private StringBuffer keyBuffer;<a name="line.71"></a>
+<FONT color="green">072</FONT>    <a name="line.72"></a>
+<FONT color="green">073</FONT>        /**<a name="line.73"></a>
+<FONT color="green">074</FONT>         * Creates a new, empty instance of &lt;code&gt;ConfigurationKey&lt;/code&gt;.<a name="line.74"></a>
+<FONT color="green">075</FONT>         */<a name="line.75"></a>
+<FONT color="green">076</FONT>        public ConfigurationKey()<a name="line.76"></a>
+<FONT color="green">077</FONT>        {<a name="line.77"></a>
+<FONT color="green">078</FONT>            keyBuffer = new StringBuffer(INITIAL_SIZE);<a name="line.78"></a>
+<FONT color="green">079</FONT>        }<a name="line.79"></a>
+<FONT color="green">080</FONT>    <a name="line.80"></a>
+<FONT color="green">081</FONT>        /**<a name="line.81"></a>
+<FONT color="green">082</FONT>         * Creates a new instance of &lt;code&gt;ConfigurationKey&lt;/code&gt; and<a name="line.82"></a>
+<FONT color="green">083</FONT>         * initializes it with the given key.<a name="line.83"></a>
+<FONT color="green">084</FONT>         *<a name="line.84"></a>
+<FONT color="green">085</FONT>         * @param key the key as a string<a name="line.85"></a>
+<FONT color="green">086</FONT>         */<a name="line.86"></a>
+<FONT color="green">087</FONT>        public ConfigurationKey(String key)<a name="line.87"></a>
+<FONT color="green">088</FONT>        {<a name="line.88"></a>
+<FONT color="green">089</FONT>            keyBuffer = new StringBuffer(key);<a name="line.89"></a>
+<FONT color="green">090</FONT>            removeTrailingDelimiter();<a name="line.90"></a>
+<FONT color="green">091</FONT>        }<a name="line.91"></a>
+<FONT color="green">092</FONT>    <a name="line.92"></a>
+<FONT color="green">093</FONT>        /**<a name="line.93"></a>
+<FONT color="green">094</FONT>         * Appends the name of a property to this key. If necessary, a<a name="line.94"></a>
+<FONT color="green">095</FONT>         * property delimiter will be added.<a name="line.95"></a>
+<FONT color="green">096</FONT>         *<a name="line.96"></a>
+<FONT color="green">097</FONT>         * @param property the name of the property to be added<a name="line.97"></a>
+<FONT color="green">098</FONT>         * @return a reference to this object<a name="line.98"></a>
+<FONT color="green">099</FONT>         */<a name="line.99"></a>
+<FONT color="green">100</FONT>        public ConfigurationKey append(String property)<a name="line.100"></a>
+<FONT color="green">101</FONT>        {<a name="line.101"></a>
+<FONT color="green">102</FONT>            if (keyBuffer.length() &gt; 0 &amp;&amp; !hasDelimiter() &amp;&amp; !isAttributeKey(property))<a name="line.102"></a>
+<FONT color="green">103</FONT>            {<a name="line.103"></a>
+<FONT color="green">104</FONT>                keyBuffer.append(PROPERTY_DELIMITER);<a name="line.104"></a>
+<FONT color="green">105</FONT>            }<a name="line.105"></a>
+<FONT color="green">106</FONT>    <a name="line.106"></a>
+<FONT color="green">107</FONT>            keyBuffer.append(property);<a name="line.107"></a>
+<FONT color="green">108</FONT>            removeTrailingDelimiter();<a name="line.108"></a>
+<FONT color="green">109</FONT>            return this;<a name="line.109"></a>
+<FONT color="green">110</FONT>        }<a name="line.110"></a>
+<FONT color="green">111</FONT>    <a name="line.111"></a>
+<FONT color="green">112</FONT>        /**<a name="line.112"></a>
+<FONT color="green">113</FONT>         * Appends an index to this configuration key.<a name="line.113"></a>
+<FONT color="green">114</FONT>         *<a name="line.114"></a>
+<FONT color="green">115</FONT>         * @param index the index to be appended<a name="line.115"></a>
+<FONT color="green">116</FONT>         * @return a reference to this object<a name="line.116"></a>
+<FONT color="green">117</FONT>         */<a name="line.117"></a>
+<FONT color="green">118</FONT>        public ConfigurationKey appendIndex(int index)<a name="line.118"></a>
+<FONT color="green">119</FONT>        {<a name="line.119"></a>
+<FONT color="green">120</FONT>            keyBuffer.append(INDEX_START).append(index);<a name="line.120"></a>
+<FONT color="green">121</FONT>            keyBuffer.append(INDEX_END);<a name="line.121"></a>
+<FONT color="green">122</FONT>            return this;<a name="line.122"></a>
+<FONT color="green">123</FONT>        }<a name="line.123"></a>
+<FONT color="green">124</FONT>    <a name="line.124"></a>
+<FONT color="green">125</FONT>        /**<a name="line.125"></a>
+<FONT color="green">126</FONT>         * Appends an attribute to this configuration key.<a name="line.126"></a>
+<FONT color="green">127</FONT>         *<a name="line.127"></a>
+<FONT color="green">128</FONT>         * @param attr the name of the attribute to be appended<a name="line.128"></a>
+<FONT color="green">129</FONT>         * @return a reference to this object<a name="line.129"></a>
+<FONT color="green">130</FONT>         */<a name="line.130"></a>
+<FONT color="green">131</FONT>        public ConfigurationKey appendAttribute(String attr)<a name="line.131"></a>
+<FONT color="green">132</FONT>        {<a name="line.132"></a>
+<FONT color="green">133</FONT>            keyBuffer.append(constructAttributeKey(attr));<a name="line.133"></a>
+<FONT color="green">134</FONT>            return this;<a name="line.134"></a>
+<FONT color="green">135</FONT>        }<a name="line.135"></a>
+<FONT color="green">136</FONT>    <a name="line.136"></a>
+<FONT color="green">137</FONT>        /**<a name="line.137"></a>
+<FONT color="green">138</FONT>         * Checks if this key is an attribute key.<a name="line.138"></a>
+<FONT color="green">139</FONT>         *<a name="line.139"></a>
+<FONT color="green">140</FONT>         * @return a flag if this key is an attribute key<a name="line.140"></a>
+<FONT color="green">141</FONT>         */<a name="line.141"></a>
+<FONT color="green">142</FONT>        public boolean isAttributeKey()<a name="line.142"></a>
+<FONT color="green">143</FONT>        {<a name="line.143"></a>
+<FONT color="green">144</FONT>            return isAttributeKey(keyBuffer.toString());<a name="line.144"></a>
+<FONT color="green">145</FONT>        }<a name="line.145"></a>
+<FONT color="green">146</FONT>    <a name="line.146"></a>
+<FONT color="green">147</FONT>        /**<a name="line.147"></a>
+<FONT color="green">148</FONT>         * Checks if the passed in key is an attribute key. Such attribute keys<a name="line.148"></a>
+<FONT color="green">149</FONT>         * start and end with certain marker strings. In some cases they must be<a name="line.149"></a>
+<FONT color="green">150</FONT>         * treated slightly different.<a name="line.150"></a>
+<FONT color="green">151</FONT>         *<a name="line.151"></a>
+<FONT color="green">152</FONT>         * @param key the key (part) to be checked<a name="line.152"></a>
+<FONT color="green">153</FONT>         * @return a flag if this key is an attribute key<a name="line.153"></a>
+<FONT color="green">154</FONT>         */<a name="line.154"></a>
+<FONT color="green">155</FONT>        public static boolean isAttributeKey(String key)<a name="line.155"></a>
+<FONT color="green">156</FONT>        {<a name="line.156"></a>
+<FONT color="green">157</FONT>            return key != null<a name="line.157"></a>
+<FONT color="green">158</FONT>            &amp;&amp; key.startsWith(ATTRIBUTE_START)<a name="line.158"></a>
+<FONT color="green">159</FONT>            &amp;&amp; key.endsWith(ATTRIBUTE_END);<a name="line.159"></a>
+<FONT color="green">160</FONT>        }<a name="line.160"></a>
+<FONT color="green">161</FONT>    <a name="line.161"></a>
+<FONT color="green">162</FONT>        /**<a name="line.162"></a>
+<FONT color="green">163</FONT>         * Decorates the given key so that it represents an attribute. Adds<a name="line.163"></a>
+<FONT color="green">164</FONT>         * special start and end markers.<a name="line.164"></a>
+<FONT color="green">165</FONT>         *<a name="line.165"></a>
+<FONT color="green">166</FONT>         * @param key the key to be decorated<a name="line.166"></a>
+<FONT color="green">167</FONT>         * @return the decorated attribute key<a name="line.167"></a>
+<FONT color="green">168</FONT>         */<a name="line.168"></a>
+<FONT color="green">169</FONT>        public static String constructAttributeKey(String key)<a name="line.169"></a>
+<FONT color="green">170</FONT>        {<a name="line.170"></a>
+<FONT color="green">171</FONT>            StringBuffer buf = new StringBuffer();<a name="line.171"></a>
+<FONT color="green">172</FONT>            buf.append(ATTRIBUTE_START).append(key).append(ATTRIBUTE_END);<a name="line.172"></a>
+<FONT color="green">173</FONT>            return buf.toString();<a name="line.173"></a>
+<FONT color="green">174</FONT>        }<a name="line.174"></a>
+<FONT color="green">175</FONT>    <a name="line.175"></a>
+<FONT color="green">176</FONT>        /**<a name="line.176"></a>
+<FONT color="green">177</FONT>         * Extracts the name of the attribute from the given attribute key.<a name="line.177"></a>
+<FONT color="green">178</FONT>         * This method removes the attribute markers - if any - from the<a name="line.178"></a>
+<FONT color="green">179</FONT>         * specified key.<a name="line.179"></a>
+<FONT color="green">180</FONT>         *<a name="line.180"></a>
+<FONT color="green">181</FONT>         * @param key the attribute key<a name="line.181"></a>
+<FONT color="green">182</FONT>         * @return the name of the corresponding attribute<a name="line.182"></a>
+<FONT color="green">183</FONT>         */<a name="line.183"></a>
+<FONT color="green">184</FONT>        public static String attributeName(String key)<a name="line.184"></a>
+<FONT color="green">185</FONT>        {<a name="line.185"></a>
+<FONT color="green">186</FONT>            return isAttributeKey(key) ? removeAttributeMarkers(key) : key;<a name="line.186"></a>
+<FONT color="green">187</FONT>        }<a name="line.187"></a>
+<FONT color="green">188</FONT>    <a name="line.188"></a>
+<FONT color="green">189</FONT>        /**<a name="line.189"></a>
+<FONT color="green">190</FONT>         * Helper method for removing attribute markers from a key.<a name="line.190"></a>
+<FONT color="green">191</FONT>         *<a name="line.191"></a>
+<FONT color="green">192</FONT>         * @param key the key<a name="line.192"></a>
+<FONT color="green">193</FONT>         * @return the key with removed attribute markers<a name="line.193"></a>
+<FONT color="green">194</FONT>         */<a name="line.194"></a>
+<FONT color="green">195</FONT>        static String removeAttributeMarkers(String key)<a name="line.195"></a>
+<FONT color="green">196</FONT>        {<a name="line.196"></a>
+<FONT color="green">197</FONT>            return key.substring(ATTRIBUTE_START.length(), key.length() - ATTRIBUTE_END.length());<a name="line.197"></a>
+<FONT color="green">198</FONT>        }<a name="line.198"></a>
+<FONT color="green">199</FONT>    <a name="line.199"></a>
+<FONT color="green">200</FONT>        /**<a name="line.200"></a>
+<FONT color="green">201</FONT>         * Helper method that checks if the actual buffer ends with a property<a name="line.201"></a>
+<FONT color="green">202</FONT>         * delimiter.<a name="line.202"></a>
+<FONT color="green">203</FONT>         *<a name="line.203"></a>
+<FONT color="green">204</FONT>         * @return a flag if there is a trailing delimiter<a name="line.204"></a>
+<FONT color="green">205</FONT>         */<a name="line.205"></a>
+<FONT color="green">206</FONT>        private boolean hasDelimiter()<a name="line.206"></a>
+<FONT color="green">207</FONT>        {<a name="line.207"></a>
+<FONT color="green">208</FONT>            int count = 0;<a name="line.208"></a>
+<FONT color="green">209</FONT>            for (int idx = keyBuffer.length() - 1; idx &gt;= 0<a name="line.209"></a>
+<FONT color="green">210</FONT>                    &amp;&amp; keyBuffer.charAt(idx) == PROPERTY_DELIMITER; idx--)<a name="line.210"></a>
+<FONT color="green">211</FONT>            {<a name="line.211"></a>
+<FONT color="green">212</FONT>                count++;<a name="line.212"></a>
+<FONT color="green">213</FONT>            }<a name="line.213"></a>
+<FONT color="green">214</FONT>            return count % 2 != 0;<a name="line.214"></a>
+<FONT color="green">215</FONT>        }<a name="line.215"></a>
+<FONT color="green">216</FONT>    <a name="line.216"></a>
+<FONT color="green">217</FONT>        /**<a name="line.217"></a>
+<FONT color="green">218</FONT>         * Removes a trailing delimiter if there is any.<a name="line.218"></a>
+<FONT color="green">219</FONT>         */<a name="line.219"></a>
+<FONT color="green">220</FONT>        private void removeTrailingDelimiter()<a name="line.220"></a>
+<FONT color="green">221</FONT>        {<a name="line.221"></a>
+<FONT color="green">222</FONT>            while (hasDelimiter())<a name="line.222"></a>
+<FONT color="green">223</FONT>            {<a name="line.223"></a>
+<FONT color="green">224</FONT>                keyBuffer.deleteCharAt(keyBuffer.length() - 1);<a name="line.224"></a>
+<FONT color="green">225</FONT>            }<a name="line.225"></a>
+<FONT color="green">226</FONT>        }<a name="line.226"></a>
+<FONT color="green">227</FONT>    <a name="line.227"></a>
+<FONT color="green">228</FONT>        /**<a name="line.228"></a>
+<FONT color="green">229</FONT>         * Returns a string representation of this object. This is the<a name="line.229"></a>
+<FONT color="green">230</FONT>         * configuration key as a plain string.<a name="line.230"></a>
+<FONT color="green">231</FONT>         *<a name="line.231"></a>
+<FONT color="green">232</FONT>         * @return a string for this object<a name="line.232"></a>
+<FONT color="green">233</FONT>         */<a name="line.233"></a>
+<FONT color="green">234</FONT>        public String toString()<a name="line.234"></a>
+<FONT color="green">235</FONT>        {<a name="line.235"></a>
+<FONT color="green">236</FONT>            return keyBuffer.toString();<a name="line.236"></a>
+<FONT color="green">237</FONT>        }<a name="line.237"></a>
+<FONT color="green">238</FONT>    <a name="line.238"></a>
+<FONT color="green">239</FONT>        /**<a name="line.239"></a>
+<FONT color="green">240</FONT>         * Returns an iterator for iterating over the single components of<a name="line.240"></a>
+<FONT color="green">241</FONT>         * this configuration key.<a name="line.241"></a>
+<FONT color="green">242</FONT>         *<a name="line.242"></a>
+<FONT color="green">243</FONT>         * @return an iterator for this key<a name="line.243"></a>
+<FONT color="green">244</FONT>         */<a name="line.244"></a>
+<FONT color="green">245</FONT>        public KeyIterator iterator()<a name="line.245"></a>
+<FONT color="green">246</FONT>        {<a name="line.246"></a>
+<FONT color="green">247</FONT>            return new KeyIterator();<a name="line.247"></a>
+<FONT color="green">248</FONT>        }<a name="line.248"></a>
+<FONT color="green">249</FONT>    <a name="line.249"></a>
+<FONT color="green">250</FONT>        /**<a name="line.250"></a>
+<FONT color="green">251</FONT>         * Returns the actual length of this configuration key.<a name="line.251"></a>
+<FONT color="green">252</FONT>         *<a name="line.252"></a>
+<FONT color="green">253</FONT>         * @return the length of this key<a name="line.253"></a>
+<FONT color="green">254</FONT>         */<a name="line.254"></a>
+<FONT color="green">255</FONT>        public int length()<a name="line.255"></a>
+<FONT color="green">256</FONT>        {<a name="line.256"></a>
+<FONT color="green">257</FONT>            return keyBuffer.length();<a name="line.257"></a>
+<FONT color="green">258</FONT>        }<a name="line.258"></a>
+<FONT color="green">259</FONT>    <a name="line.259"></a>
+<FONT color="green">260</FONT>        /**<a name="line.260"></a>
+<FONT color="green">261</FONT>         * Sets the new length of this configuration key. With this method it is<a name="line.261"></a>
+<FONT color="green">262</FONT>         * possible to truncate the key, e.g. to return to a state prior calling<a name="line.262"></a>
+<FONT color="green">263</FONT>         * some &lt;code&gt;append()&lt;/code&gt; methods. The semantic is the same as<a name="line.263"></a>
+<FONT color="green">264</FONT>         * the &lt;code&gt;setLength()&lt;/code&gt; method of &lt;code&gt;StringBuffer&lt;/code&gt;.<a name="line.264"></a>
+<FONT color="green">265</FONT>         *<a name="line.265"></a>
+<FONT color="green">266</FONT>         * @param len the new length of the key<a name="line.266"></a>
+<FONT color="green">267</FONT>         */<a name="line.267"></a>
+<FONT color="green">268</FONT>        public void setLength(int len)<a name="line.268"></a>
+<FONT color="green">269</FONT>        {<a name="line.269"></a>
+<FONT color="green">270</FONT>            keyBuffer.setLength(len);<a name="line.270"></a>
+<FONT color="green">271</FONT>        }<a name="line.271"></a>
+<FONT color="green">272</FONT>    <a name="line.272"></a>
+<FONT color="green">273</FONT>        /**<a name="line.273"></a>
+<FONT color="green">274</FONT>         * Checks if two &lt;code&gt;ConfigurationKey&lt;/code&gt; objects are equal. The<a name="line.274"></a>
+<FONT color="green">275</FONT>         * method can be called with strings or other objects, too.<a name="line.275"></a>
+<FONT color="green">276</FONT>         *<a name="line.276"></a>
+<FONT color="green">277</FONT>         * @param c the object to compare<a name="line.277"></a>
+<FONT color="green">278</FONT>         * @return a flag if both objects are equal<a name="line.278"></a>
+<FONT color="green">279</FONT>         */<a name="line.279"></a>
+<FONT color="green">280</FONT>        public boolean equals(Object c)<a name="line.280"></a>
+<FONT color="green">281</FONT>        {<a name="line.281"></a>
+<FONT color="green">282</FONT>            if (c == null)<a name="line.282"></a>
+<FONT color="green">283</FONT>            {<a name="line.283"></a>
+<FONT color="green">284</FONT>                return false;<a name="line.284"></a>
+<FONT color="green">285</FONT>            }<a name="line.285"></a>
+<FONT color="green">286</FONT>    <a name="line.286"></a>
+<FONT color="green">287</FONT>            return keyBuffer.toString().equals(c.toString());<a name="line.287"></a>
+<FONT color="green">288</FONT>        }<a name="line.288"></a>
+<FONT color="green">289</FONT>    <a name="line.289"></a>
+<FONT color="green">290</FONT>        /**<a name="line.290"></a>
+<FONT color="green">291</FONT>         * Returns the hash code for this object.<a name="line.291"></a>
+<FONT color="green">292</FONT>         *<a name="line.292"></a>
+<FONT color="green">293</FONT>         * @return the hash code<a name="line.293"></a>
+<FONT color="green">294</FONT>         */<a name="line.294"></a>
+<FONT color="green">295</FONT>        public int hashCode()<a name="line.295"></a>
+<FONT color="green">296</FONT>        {<a name="line.296"></a>
+<FONT color="green">297</FONT>            return String.valueOf(keyBuffer).hashCode();<a name="line.297"></a>
+<FONT color="green">298</FONT>        }<a name="line.298"></a>
+<FONT color="green">299</FONT>    <a name="line.299"></a>
+<FONT color="green">300</FONT>        /**<a name="line.300"></a>
+<FONT color="green">301</FONT>         * Returns a configuration key object that is initialized with the part<a name="line.301"></a>
+<FONT color="green">302</FONT>         * of the key that is common to this key and the passed in key.<a name="line.302"></a>
+<FONT color="green">303</FONT>         *<a name="line.303"></a>
+<FONT color="green">304</FONT>         * @param other the other key<a name="line.304"></a>
+<FONT color="green">305</FONT>         * @return a key object with the common key part<a name="line.305"></a>
+<FONT color="green">306</FONT>         */<a name="line.306"></a>
+<FONT color="green">307</FONT>        public ConfigurationKey commonKey(ConfigurationKey other)<a name="line.307"></a>
+<FONT color="green">308</FONT>        {<a name="line.308"></a>
+<FONT color="green">309</FONT>            if (other == null)<a name="line.309"></a>
+<FONT color="green">310</FONT>            {<a name="line.310"></a>
+<FONT color="green">311</FONT>                throw new IllegalArgumentException("Other key must no be null!");<a name="line.311"></a>
+<FONT color="green">312</FONT>            }<a name="line.312"></a>
+<FONT color="green">313</FONT>    <a name="line.313"></a>
+<FONT color="green">314</FONT>            ConfigurationKey result = new ConfigurationKey();<a name="line.314"></a>
+<FONT color="green">315</FONT>            KeyIterator it1 = iterator();<a name="line.315"></a>
+<FONT color="green">316</FONT>            KeyIterator it2 = other.iterator();<a name="line.316"></a>
+<FONT color="green">317</FONT>    <a name="line.317"></a>
+<FONT color="green">318</FONT>            while (it1.hasNext() &amp;&amp; it2.hasNext() &amp;&amp; partsEqual(it1, it2))<a name="line.318"></a>
+<FONT color="green">319</FONT>            {<a name="line.319"></a>
+<FONT color="green">320</FONT>                if (it1.isAttribute())<a name="line.320"></a>
+<FONT color="green">321</FONT>                {<a name="line.321"></a>
+<FONT color="green">322</FONT>                    result.appendAttribute(it1.currentKey());<a name="line.322"></a>
+<FONT color="green">323</FONT>                }<a name="line.323"></a>
+<FONT color="green">324</FONT>                else<a name="line.324"></a>
+<FONT color="green">325</FONT>                {<a name="line.325"></a>
+<FONT color="green">326</FONT>                    result.append(it1.currentKey());<a name="line.326"></a>
+<FONT color="green">327</FONT>                    if (it1.hasIndex)<a name="line.327"></a>
+<FONT color="green">328</FONT>                    {<a name="line.328"></a>
+<FONT color="green">329</FONT>                        result.appendIndex(it1.getIndex());<a name="line.329"></a>
+<FONT color="green">330</FONT>                    }<a name="line.330"></a>
+<FONT color="green">331</FONT>                }<a name="line.331"></a>
+<FONT color="green">332</FONT>            }<a name="line.332"></a>
+<FONT color="green">333</FONT>    <a name="line.333"></a>
+<FONT color="green">334</FONT>            return result;<a name="line.334"></a>
+<FONT color="green">335</FONT>        }<a name="line.335"></a>
+<FONT color="green">336</FONT>    <a name="line.336"></a>
+<FONT color="green">337</FONT>        /**<a name="line.337"></a>
+<FONT color="green">338</FONT>         * Returns the &amp;quot;difference key&amp;quot; to a given key. This value<a name="line.338"></a>
+<FONT color="green">339</FONT>         * is the part of the passed in key that differs from this key. There is<a name="line.339"></a>
+<FONT color="green">340</FONT>         * the following relation:<a name="line.340"></a>
+<FONT color="green">341</FONT>         * &lt;code&gt;other = key.commonKey(other) + key.differenceKey(other)&lt;/code&gt;<a name="line.341"></a>
+<FONT color="green">342</FONT>         * for an arbitrary configuration key &lt;code&gt;key&lt;/code&gt;.<a name="line.342"></a>
+<FONT color="green">343</FONT>         *<a name="line.343"></a>
+<FONT color="green">344</FONT>         * @param other the key for which the difference is to be calculated<a name="line.344"></a>
+<FONT color="green">345</FONT>         * @return the difference key<a name="line.345"></a>
+<FONT color="green">346</FONT>         */<a name="line.346"></a>
+<FONT color="green">347</FONT>        public ConfigurationKey differenceKey(ConfigurationKey other)<a name="line.347"></a>
+<FONT color="green">348</FONT>        {<a name="line.348"></a>
+<FONT color="green">349</FONT>            ConfigurationKey common = commonKey(other);<a name="line.349"></a>
+<FONT color="green">350</FONT>            ConfigurationKey result = new ConfigurationKey();<a name="line.350"></a>
+<FONT color="green">351</FONT>    <a name="line.351"></a>
+<FONT color="green">352</FONT>            if (common.length() &lt; other.length())<a name="line.352"></a>
+<FONT color="green">353</FONT>            {<a name="line.353"></a>
+<FONT color="green">354</FONT>                String k = other.toString().substring(common.length());<a name="line.354"></a>
+<FONT color="green">355</FONT>                // skip trailing delimiters<a name="line.355"></a>
+<FONT color="green">356</FONT>                int i = 0;<a name="line.356"></a>
+<FONT color="green">357</FONT>                while (i &lt; k.length() &amp;&amp; k.charAt(i) == PROPERTY_DELIMITER)<a name="line.357"></a>
+<FONT color="green">358</FONT>                {<a name="line.358"></a>
+<FONT color="green">359</FONT>                    i++;<a name="line.359"></a>
+<FONT color="green">360</FONT>                }<a name="line.360"></a>
+<FONT color="green">361</FONT>    <a name="line.361"></a>
+<FONT color="green">362</FONT>                if (i &lt; k.length())<a name="line.362"></a>
+<FONT color="green">363</FONT>                {<a name="line.363"></a>
+<FONT color="green">364</FONT>                    result.append(k.substring(i));<a name="line.364"></a>
+<FONT color="green">365</FONT>                }<a name="line.365"></a>
+<FONT color="green">366</FONT>            }<a name="line.366"></a>
+<FONT color="green">367</FONT>    <a name="line.367"></a>
+<FONT color="green">368</FONT>            return result;<a name="line.368"></a>
+<FONT color="green">369</FONT>        }<a name="line.369"></a>
+<FONT color="green">370</FONT>    <a name="line.370"></a>
+<FONT color="green">371</FONT>        /**<a name="line.371"></a>
+<FONT color="green">372</FONT>         * Helper method for comparing two key parts.<a name="line.372"></a>
+<FONT color="green">373</FONT>         *<a name="line.373"></a>
+<FONT color="green">374</FONT>         * @param it1 the iterator with the first part<a name="line.374"></a>
+<FONT color="green">375</FONT>         * @param it2 the iterator with the second part<a name="line.375"></a>
+<FONT color="green">376</FONT>         * @return a flag if both parts are equal<a name="line.376"></a>
+<FONT color="green">377</FONT>         */<a name="line.377"></a>
+<FONT color="green">378</FONT>        private static boolean partsEqual(KeyIterator it1, KeyIterator it2)<a name="line.378"></a>
+<FONT color="green">379</FONT>        {<a name="line.379"></a>
+<FONT color="green">380</FONT>            return it1.nextKey().equals(it2.nextKey())<a name="line.380"></a>
+<FONT color="green">381</FONT>            &amp;&amp; it1.getIndex() == it2.getIndex()<a name="line.381"></a>
+<FONT color="green">382</FONT>            &amp;&amp; it1.isAttribute() == it2.isAttribute();<a name="line.382"></a>
+<FONT color="green">383</FONT>        }<a name="line.383"></a>
+<FONT color="green">384</FONT>    <a name="line.384"></a>
+<FONT color="green">385</FONT>        /**<a name="line.385"></a>
+<FONT color="green">386</FONT>         * A specialized iterator class for tokenizing a configuration key.<a name="line.386"></a>
+<FONT color="green">387</FONT>         * This class implements the normal iterator interface. In addition it<a name="line.387"></a>
+<FONT color="green">388</FONT>         * provides some specific methods for configuration keys.<a name="line.388"></a>
+<FONT color="green">389</FONT>         */<a name="line.389"></a>
+<FONT color="green">390</FONT>        public class KeyIterator implements Iterator, Cloneable<a name="line.390"></a>
+<FONT color="green">391</FONT>        {<a name="line.391"></a>
+<FONT color="green">392</FONT>            /** Stores the current key name.*/<a name="line.392"></a>
+<FONT color="green">393</FONT>            private String current;<a name="line.393"></a>
+<FONT color="green">394</FONT>    <a name="line.394"></a>
+<FONT color="green">395</FONT>            /** Stores the start index of the actual token.*/<a name="line.395"></a>
+<FONT color="green">396</FONT>            private int startIndex;<a name="line.396"></a>
+<FONT color="green">397</FONT>    <a name="line.397"></a>
+<FONT color="green">398</FONT>            /** Stores the end index of the actual token.*/<a name="line.398"></a>
+<FONT color="green">399</FONT>            private int endIndex;<a name="line.399"></a>
+<FONT color="green">400</FONT>    <a name="line.400"></a>
+<FONT color="green">401</FONT>            /** Stores the index of the actual property if there is one.*/<a name="line.401"></a>
+<FONT color="green">402</FONT>            private int indexValue;<a name="line.402"></a>
+<FONT color="green">403</FONT>    <a name="line.403"></a>
+<FONT color="green">404</FONT>            /** Stores a flag if the actual property has an index.*/<a name="line.404"></a>
+<FONT color="green">405</FONT>            private boolean hasIndex;<a name="line.405"></a>
+<FONT color="green">406</FONT>    <a name="line.406"></a>
+<FONT color="green">407</FONT>            /** Stores a flag if the actual property is an attribute.*/<a name="line.407"></a>
+<FONT color="green">408</FONT>            private boolean attribute;<a name="line.408"></a>
+<FONT color="green">409</FONT>    <a name="line.409"></a>
+<FONT color="green">410</FONT>            /**<a name="line.410"></a>
+<FONT color="green">411</FONT>             * Helper method for determining the next indices.<a name="line.411"></a>
+<FONT color="green">412</FONT>             *<a name="line.412"></a>
+<FONT color="green">413</FONT>             * @return the next key part<a name="line.413"></a>
+<FONT color="green">414</FONT>             */<a name="line.414"></a>
+<FONT color="green">415</FONT>            private String findNextIndices()<a name="line.415"></a>
+<FONT color="green">416</FONT>            {<a name="line.416"></a>
+<FONT color="green">417</FONT>                startIndex = endIndex;<a name="line.417"></a>
+<FONT color="green">418</FONT>                // skip empty names<a name="line.418"></a>
+<FONT color="green">419</FONT>                while (startIndex &lt; keyBuffer.length()<a name="line.419"></a>
+<FONT color="green">420</FONT>                        &amp;&amp; keyBuffer.charAt(startIndex) == PROPERTY_DELIMITER)<a name="line.420"></a>
+<FONT color="green">421</FONT>                {<a name="line.421"></a>
+<FONT color="green">422</FONT>                    startIndex++;<a name="line.422"></a>
+<FONT color="green">423</FONT>                }<a name="line.423"></a>
+<FONT color="green">424</FONT>    <a name="line.424"></a>
+<FONT color="green">425</FONT>                // Key ends with a delimiter?<a name="line.425"></a>
+<FONT color="green">426</FONT>                if (startIndex &gt;= keyBuffer.length())<a name="line.426"></a>
+<FONT color="green">427</FONT>                {<a name="line.427"></a>
+<FONT color="green">428</FONT>                    endIndex = keyBuffer.length();<a name="line.428"></a>
+<FONT color="green">429</FONT>                    startIndex = endIndex - 1;<a name="line.429"></a>
+<FONT color="green">430</FONT>                    return keyBuffer.substring(startIndex, endIndex);<a name="line.430"></a>
+<FONT color="green">431</FONT>                }<a name="line.431"></a>
+<FONT color="green">432</FONT>                else<a name="line.432"></a>
+<FONT color="green">433</FONT>                {<a name="line.433"></a>
+<FONT color="green">434</FONT>                    return nextKeyPart();<a name="line.434"></a>
+<FONT color="green">435</FONT>                }<a name="line.435"></a>
+<FONT color="green">436</FONT>            }<a name="line.436"></a>
+<FONT color="green">437</FONT>    <a name="line.437"></a>
+<FONT color="green">438</FONT>            /**<a name="line.438"></a>
+<FONT color="green">439</FONT>             * Helper method for extracting the next key part. Takes escaping of<a name="line.439"></a>
+<FONT color="green">440</FONT>             * delimiter characters into account.<a name="line.440"></a>
+<FONT color="green">441</FONT>             *<a name="line.441"></a>
+<FONT color="green">442</FONT>             * @return the next key part<a name="line.442"></a>
+<FONT color="green">443</FONT>             */<a name="line.443"></a>
+<FONT color="green">444</FONT>            private String nextKeyPart()<a name="line.444"></a>
+<FONT color="green">445</FONT>            {<a name="line.445"></a>
+<FONT color="green">446</FONT>                StringBuffer key = new StringBuffer(INITIAL_SIZE);<a name="line.446"></a>
+<FONT color="green">447</FONT>                int idx = startIndex;<a name="line.447"></a>
+<FONT color="green">448</FONT>                int endIdx = keyBuffer.toString().indexOf(ATTRIBUTE_START,<a name="line.448"></a>
+<FONT color="green">449</FONT>                        startIndex);<a name="line.449"></a>
+<FONT color="green">450</FONT>                if (endIdx &lt; 0 || endIdx == startIndex)<a name="line.450"></a>
+<FONT color="green">451</FONT>                {<a name="line.451"></a>
+<FONT color="green">452</FONT>                    endIdx = keyBuffer.length();<a name="line.452"></a>
+<FONT color="green">453</FONT>                }<a name="line.453"></a>
+<FONT color="green">454</FONT>                boolean found = false;<a name="line.454"></a>
+<FONT color="green">455</FONT>    <a name="line.455"></a>
+<FONT color="green">456</FONT>                while (!found &amp;&amp; idx &lt; endIdx)<a name="line.456"></a>
+<FONT color="green">457</FONT>                {<a name="line.457"></a>
+<FONT color="green">458</FONT>                    char c = keyBuffer.charAt(idx);<a name="line.458"></a>
+<FONT color="green">459</FONT>                    if (c == PROPERTY_DELIMITER)<a name="line.459"></a>
+<FONT color="green">460</FONT>                    {<a name="line.460"></a>
+<FONT color="green">461</FONT>                        // a duplicated delimiter means escaping<a name="line.461"></a>
+<FONT color="green">462</FONT>                        if (idx == endIdx - 1<a name="line.462"></a>
+<FONT color="green">463</FONT>                                || keyBuffer.charAt(idx + 1) != PROPERTY_DELIMITER)<a name="line.463"></a>
+<FONT color="green">464</FONT>                        {<a name="line.464"></a>
+<FONT color="green">465</FONT>                            found = true;<a name="line.465"></a>
+<FONT color="green">466</FONT>                        }<a name="line.466"></a>
+<FONT color="green">467</FONT>                        else<a name="line.467"></a>
+<FONT color="green">468</FONT>                        {<a name="line.468"></a>
+<FONT color="green">469</FONT>                            idx++;<a name="line.469"></a>
+<FONT color="green">470</FONT>                        }<a name="line.470"></a>
+<FONT color="green">471</FONT>                    }<a name="line.471"></a>
+<FONT color="green">472</FONT>                    if (!found)<a name="line.472"></a>
+<FONT color="green">473</FONT>                    {<a name="line.473"></a>
+<FONT color="green">474</FONT>                        key.append(c);<a name="line.474"></a>
+<FONT color="green">475</FONT>                        idx++;<a name="line.475"></a>
+<FONT color="green">476</FONT>                    }<a name="line.476"></a>
+<FONT color="green">477</FONT>                }<a name="line.477"></a>
+<FONT color="green">478</FONT>    <a name="line.478"></a>
+<FONT color="green">479</FONT>                endIndex = idx;<a name="line.479"></a>
+<FONT color="green">480</FONT>                return key.toString();<a name="line.480"></a>
+<FONT color="green">481</FONT>            }<a name="line.481"></a>
+<FONT color="green">482</FONT>    <a name="line.482"></a>
+<FONT color="green">483</FONT>            /**<a name="line.483"></a>
+<FONT color="green">484</FONT>             * Returns the next key part of this configuration key. This is a short<a name="line.484"></a>
+<FONT color="green">485</FONT>             * form of &lt;code&gt;nextKey(false)&lt;/code&gt;.<a name="line.485"></a>
+<FONT color="green">486</FONT>             *<a name="line.486"></a>
+<FONT color="green">487</FONT>             * @return the next key part<a name="line.487"></a>
+<FONT color="green">488</FONT>             */<a name="line.488"></a>
+<FONT color="green">489</FONT>            public String nextKey()<a name="line.489"></a>
+<FONT color="green">490</FONT>            {<a name="line.490"></a>
+<FONT color="green">491</FONT>                return nextKey(false);<a name="line.491"></a>
+<FONT color="green">492</FONT>            }<a name="line.492"></a>
+<FONT color="green">493</FONT>    <a name="line.493"></a>
+<FONT color="green">494</FONT>            /**<a name="line.494"></a>
+<FONT color="green">495</FONT>             * Returns the next key part of this configuration key. The boolean<a name="line.495"></a>
+<FONT color="green">496</FONT>             * parameter indicates wheter a decorated key should be returned. This<a name="line.496"></a>
+<FONT color="green">497</FONT>             * affects only attribute keys: if the parameter is &lt;b&gt;false&lt;/b&gt;, the<a name="line.497"></a>
+<FONT color="green">498</FONT>             * attribute markers are stripped from the key; if it is &lt;b&gt;true&lt;/b&gt;,<a name="line.498"></a>
+<FONT color="green">499</FONT>             * they remain.<a name="line.499"></a>
+<FONT color="green">500</FONT>             *<a name="line.500"></a>
+<FONT color="green">501</FONT>             * @param decorated a flag if the decorated key is to be returned<a name="line.501"></a>
+<FONT color="green">502</FONT>             * @return the next key part<a name="line.502"></a>
+<FONT color="green">503</FONT>             */<a name="line.503"></a>
+<FONT color="green">504</FONT>            public String nextKey(boolean decorated)<a name="line.504"></a>
+<FONT color="green">505</FONT>            {<a name="line.505"></a>
+<FONT color="green">506</FONT>                if (!hasNext())<a name="line.506"></a>
+<FONT color="green">507</FONT>                {<a name="line.507"></a>
+<FONT color="green">508</FONT>                    throw new NoSuchElementException("No more key parts!");<a name="line.508"></a>
+<FONT color="green">509</FONT>                }<a name="line.509"></a>
+<FONT color="green">510</FONT>    <a name="line.510"></a>
+<FONT color="green">511</FONT>                hasIndex = false;<a name="line.511"></a>
+<FONT color="green">512</FONT>                indexValue = -1;<a name="line.512"></a>
+<FONT color="green">513</FONT>                String key = findNextIndices();<a name="line.513"></a>
+<FONT color="green">514</FONT>    <a name="line.514"></a>
+<FONT color="green">515</FONT>                current = key;<a name="line.515"></a>
+<FONT color="green">516</FONT>                hasIndex = checkIndex(key);<a name="line.516"></a>
+<FONT color="green">517</FONT>                attribute = checkAttribute(current);<a name="line.517"></a>
+<FONT color="green">518</FONT>    <a name="line.518"></a>
+<FONT color="green">519</FONT>                return currentKey(decorated);<a name="line.519"></a>
+<FONT color="green">520</FONT>            }<a name="line.520"></a>
+<FONT color="green">521</FONT>    <a name="line.521"></a>
+<FONT color="green">522</FONT>            /**<a name="line.522"></a>
+<FONT color="green">523</FONT>             * Helper method for checking if the passed key is an attribute.<a name="line.523"></a>
+<FONT color="green">524</FONT>             * If this is the case, the internal fields will be set.<a name="line.524"></a>
+<FONT color="green">525</FONT>             *<a name="line.525"></a>
+<FONT color="green">526</FONT>             * @param key the key to be checked<a name="line.526"></a>
+<FONT color="green">527</FONT>             * @return a flag if the key is an attribute<a name="line.527"></a>
+<FONT color="green">528</FONT>             */<a name="line.528"></a>
+<FONT color="green">529</FONT>            private boolean checkAttribute(String key)<a name="line.529"></a>
+<FONT color="green">530</FONT>            {<a name="line.530"></a>
+<FONT color="green">531</FONT>                if (isAttributeKey(key))<a name="line.531"></a>
+<FONT color="green">532</FONT>                {<a name="line.532"></a>
+<FONT color="green">533</FONT>                    current = removeAttributeMarkers(key);<a name="line.533"></a>
+<FONT color="green">534</FONT>                    return true;<a name="line.534"></a>
+<FONT color="green">535</FONT>                }<a name="line.535"></a>
+<FONT color="green">536</FONT>                else<a name="line.536"></a>
+<FONT color="green">537</FONT>                {<a name="line.537"></a>
+<FONT color="green">538</FONT>                    return false;<a name="line.538"></a>
+<FONT color="green">539</FONT>                }<a name="line.539"></a>
+<FONT color="green">540</FONT>            }<a name="line.540"></a>
+<FONT color="green">541</FONT>    <a name="line.541"></a>
+<FONT color="green">542</FONT>            /**<a name="line.542"></a>
+<FONT color="green">543</FONT>             * Helper method for checking if the passed key contains an index.<a name="line.543"></a>
+<FONT color="green">544</FONT>             * If this is the case, internal fields will be set.<a name="line.544"></a>
+<FONT color="green">545</FONT>             *<a name="line.545"></a>
+<FONT color="green">546</FONT>             * @param key the key to be checked<a name="line.546"></a>
+<FONT color="green">547</FONT>             * @return a flag if an index is defined<a name="line.547"></a>
+<FONT color="green">548</FONT>             */<a name="line.548"></a>
+<FONT color="green">549</FONT>            private boolean checkIndex(String key)<a name="line.549"></a>
+<FONT color="green">550</FONT>            {<a name="line.550"></a>
+<FONT color="green">551</FONT>                boolean result = false;<a name="line.551"></a>
+<FONT color="green">552</FONT>    <a name="line.552"></a>
+<FONT color="green">553</FONT>                int idx = key.lastIndexOf(INDEX_START);<a name="line.553"></a>
+<FONT color="green">554</FONT>                if (idx &gt; 0)<a name="line.554"></a>
+<FONT color="green">555</FONT>                {<a name="line.555"></a>
+<FONT color="green">556</FONT>                    int endidx = key.indexOf(INDEX_END, idx);<a name="line.556"></a>
+<FONT color="green">557</FONT>    <a name="line.557"></a>
+<FONT color="green">558</FONT>                    if (endidx &gt; idx + 1)<a name="line.558"></a>
+<FONT color="green">559</FONT>                    {<a name="line.559"></a>
+<FONT color="green">560</FONT>                        indexValue = Integer.parseInt(key.substring(idx + 1, endidx));<a name="line.560"></a>
+<FONT color="green">561</FONT>                        current = key.substring(0, idx);<a name="line.561"></a>
+<FONT color="green">562</FONT>                        result = true;<a name="line.562"></a>
+<FONT color="green">563</FONT>                    }<a name="line.563"></a>
+<FONT color="green">564</FONT>                }<a name="line.564"></a>
+<FONT color="green">565</FONT>    <a name="line.565"></a>
+<FONT color="green">566</FONT>                return result;<a name="line.566"></a>
+<FONT color="green">567</FONT>            }<a name="line.567"></a>
+<FONT color="green">568</FONT>    <a name="line.568"></a>
+<FONT color="green">569</FONT>            /**<a name="line.569"></a>
+<FONT color="green">570</FONT>             * Checks if there is a next element.<a name="line.570"></a>
+<FONT color="green">571</FONT>             *<a name="line.571"></a>
+<FONT color="green">572</FONT>             * @return a flag if there is a next element<a name="line.572"></a>
+<FONT color="green">573</FONT>             */<a name="line.573"></a>
+<FONT color="green">574</FONT>            public boolean hasNext()<a name="line.574"></a>
+<FONT color="green">575</FONT>            {<a name="line.575"></a>
+<FONT color="green">576</FONT>                return endIndex &lt; keyBuffer.length();<a name="line.576"></a>
+<FONT color="green">577</FONT>            }<a name="line.577"></a>
+<FONT color="green">578</FONT>    <a name="line.578"></a>
+<FONT color="green">579</FONT>            /**<a name="line.579"></a>
+<FONT color="green">580</FONT>             * Returns the next object in the iteration.<a name="line.580"></a>
+<FONT color="green">581</FONT>             *<a name="line.581"></a>
+<FONT color="green">582</FONT>             * @return the next object<a name="line.582"></a>
+<FONT color="green">583</FONT>             */<a name="line.583"></a>
+<FONT color="green">584</FONT>            public Object next()<a name="line.584"></a>
+<FONT color="green">585</FONT>            {<a name="line.585"></a>
+<FONT color="green">586</FONT>                return nextKey();<a name="line.586"></a>
+<FONT color="green">587</FONT>            }<a name="line.587"></a>
+<FONT color="green">588</FONT>    <a name="line.588"></a>
+<FONT color="green">589</FONT>            /**<a name="line.589"></a>
+<FONT color="green">590</FONT>             * Removes the current object in the iteration. This method is not<a name="line.590"></a>
+<FONT color="green">591</FONT>             * supported by this iterator type, so an exception is thrown.<a name="line.591"></a>
+<FONT color="green">592</FONT>             */<a name="line.592"></a>
+<FONT color="green">593</FONT>            public void remove()<a name="line.593"></a>
+<FONT color="green">594</FONT>            {<a name="line.594"></a>
+<FONT color="green">595</FONT>                throw new UnsupportedOperationException("Remove not supported!");<a name="line.595"></a>
+<FONT color="green">596</FONT>            }<a name="line.596"></a>
+<FONT color="green">597</FONT>    <a name="line.597"></a>
+<FONT color="green">598</FONT>            /**<a name="line.598"></a>
+<FONT color="green">599</FONT>             * Returns the current key of the iteration (without skipping to the<a name="line.599"></a>
+<FONT color="green">600</FONT>             * next element). This is the same key the previous &lt;code&gt;next()&lt;/code&gt;<a name="line.600"></a>
+<FONT color="green">601</FONT>             * call had returned. (Short form of &lt;code&gt;currentKey(false)&lt;/code&gt;.<a name="line.601"></a>
+<FONT color="green">602</FONT>             *<a name="line.602"></a>
+<FONT color="green">603</FONT>             * @return the current key<a name="line.603"></a>
+<FONT color="green">604</FONT>             */<a name="line.604"></a>
+<FONT color="green">605</FONT>            public String currentKey()<a name="line.605"></a>
+<FONT color="green">606</FONT>            {<a name="line.606"></a>
+<FONT color="green">607</FONT>                return currentKey(false);<a name="line.607"></a>
+<FONT color="green">608</FONT>            }<a name="line.608"></a>
+<FONT color="green">609</FONT>    <a name="line.609"></a>
+<FONT color="green">610</FONT>            /**<a name="line.610"></a>
+<FONT color="green">611</FONT>             * Returns the current key of the iteration (without skipping to the<a name="line.611"></a>
+<FONT color="green">612</FONT>             * next element). The boolean parameter indicates wheter a decorated<a name="line.612"></a>
+<FONT color="green">613</FONT>             * key should be returned. This affects only attribute keys: if the<a name="line.613"></a>
+<FONT color="green">614</FONT>             * parameter is &lt;b&gt;false&lt;/b&gt;, the attribute markers are stripped from<a name="line.614"></a>
+<FONT color="green">615</FONT>             * the key; if it is &lt;b&gt;true&lt;/b&gt;, they remain.<a name="line.615"></a>
+<FONT color="green">616</FONT>             *<a name="line.616"></a>
+<FONT color="green">617</FONT>             * @param decorated a flag if the decorated key is to be returned<a name="line.617"></a>
+<FONT color="green">618</FONT>             * @return the current key<a name="line.618"></a>
+<FONT color="green">619</FONT>             */<a name="line.619"></a>
+<FONT color="green">620</FONT>            public String currentKey(boolean decorated)<a name="line.620"></a>
+<FONT color="green">621</FONT>            {<a name="line.621"></a>
+<FONT color="green">622</FONT>                return (decorated &amp;&amp; isAttribute()) ? constructAttributeKey(current) : current;<a name="line.622"></a>
+<FONT color="green">623</FONT>            }<a name="line.623"></a>
+<FONT color="green">624</FONT>    <a name="line.624"></a>
+<FONT color="green">625</FONT>            /**<a name="line.625"></a>
+<FONT color="green">626</FONT>             * Returns a flag if the current key is an attribute. This method can<a name="line.626"></a>
+<FONT color="green">627</FONT>             * be called after &lt;code&gt;next()&lt;/code&gt;.<a name="line.627"></a>
+<FONT color="green">628</FONT>             *<a name="line.628"></a>
+<FONT color="green">629</FONT>             * @return a flag if the current key is an attribute<a name="line.629"></a>
+<FONT color="green">630</FONT>             */<a name="line.630"></a>
+<FONT color="green">631</FONT>            public boolean isAttribute()<a name="line.631"></a>
+<FONT color="green">632</FONT>            {<a name="line.632"></a>
+<FONT color="green">633</FONT>                return attribute;<a name="line.633"></a>
+<FONT color="green">634</FONT>            }<a name="line.634"></a>
+<FONT color="green">635</FONT>    <a name="line.635"></a>
+<FONT color="green">636</FONT>            /**<a name="line.636"></a>
+<FONT color="green">637</FONT>             * Returns the index value of the current key. If the current key does<a name="line.637"></a>
+<FONT color="green">638</FONT>             * not have an index, return value is -1. This method can be called<a name="line.638"></a>
+<FONT color="green">639</FONT>             * after &lt;code&gt;next()&lt;/code&gt;.<a name="line.639"></a>
+<FONT color="green">640</FONT>             *<a name="line.640"></a>
+<FONT color="green">641</FONT>             * @return the index value of the current key<a name="line.641"></a>
+<FONT color="green">642</FONT>             */<a name="line.642"></a>
+<FONT color="green">643</FONT>            public int getIndex()<a name="line.643"></a>
+<FONT color="green">644</FONT>            {<a name="line.644"></a>
+<FONT color="green">645</FONT>                return indexValue;<a name="line.645"></a>
+<FONT color="green">646</FONT>            }<a name="line.646"></a>
+<FONT color="green">647</FONT>    <a name="line.647"></a>
+<FONT color="green">648</FONT>            /**<a name="line.648"></a>
+<FONT color="green">649</FONT>             * Returns a flag if the current key has an associated index.<a name="line.649"></a>
+<FONT color="green">650</FONT>             * This method can be called after &lt;code&gt;next()&lt;/code&gt;.<a name="line.650"></a>
+<FONT color="green">651</FONT>             *<a name="line.651"></a>
+<FONT color="green">652</FONT>             * @return a flag if the current key has an index<a name="line.652"></a>
+<FONT color="green">653</FONT>             */<a name="line.653"></a>
+<FONT color="green">654</FONT>            public boolean hasIndex()<a name="line.654"></a>
+<FONT color="green">655</FONT>            {<a name="line.655"></a>
+<FONT color="green">656</FONT>                return hasIndex;<a name="line.656"></a>
+<FONT color="green">657</FONT>            }<a name="line.657"></a>
+<FONT color="green">658</FONT>    <a name="line.658"></a>
+<FONT color="green">659</FONT>            /**<a name="line.659"></a>
+<FONT color="green">660</FONT>             * Creates a clone of this object.<a name="line.660"></a>
+<FONT color="green">661</FONT>             *<a name="line.661"></a>
+<FONT color="green">662</FONT>             * @return a clone of this object<a name="line.662"></a>
+<FONT color="green">663</FONT>             */<a name="line.663"></a>
+<FONT color="green">664</FONT>            public Object clone()<a name="line.664"></a>
+<FONT color="green">665</FONT>            {<a name="line.665"></a>
+<FONT color="green">666</FONT>                try<a name="line.666"></a>
+<FONT color="green">667</FONT>                {<a name="line.667"></a>
+<FONT color="green">668</FONT>                    return super.clone();<a name="line.668"></a>
+<FONT color="green">669</FONT>                }<a name="line.669"></a>
+<FONT color="green">670</FONT>                catch (CloneNotSupportedException cex)<a name="line.670"></a>
+<FONT color="green">671</FONT>                {<a name="line.671"></a>
+<FONT color="green">672</FONT>                    // should not happen<a name="line.672"></a>
+<FONT color="green">673</FONT>                    return null;<a name="line.673"></a>
+<FONT color="green">674</FONT>                }<a name="line.674"></a>
+<FONT color="green">675</FONT>            }<a name="line.675"></a>
+<FONT color="green">676</FONT>        }<a name="line.676"></a>
+<FONT color="green">677</FONT>    }<a name="line.677"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>
