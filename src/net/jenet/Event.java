@@ -65,7 +65,7 @@ public class Event {
 
         protected Peer peer;
 
-        protected TYPE type;
+        public TYPE type;
 
         Event() {
                 type = TYPE.NONE;
