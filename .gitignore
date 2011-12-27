@@ -3,3 +3,8 @@ nbproject/private
 
 # build folder
 build
+
+# examples
+# private directory used by NetBeans IDE
+examples/ClientExample/nbproject/private
+examples/ServerExample/nbproject/private
