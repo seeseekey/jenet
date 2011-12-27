@@ -46,6 +46,8 @@ public class ServerExample {
             {
                 System.out.println(event.getPeer().getAddress() + " DISCONNECT");
                 connectCount--;
+                
+                if(connectCount<=0 && shutdownRecieved) run=false;
             }
             else if(event.type==Event.TYPE.RECEIVED)
             {
